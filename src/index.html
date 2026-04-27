@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="style.css">
+<title>MoreMoney</title>
+</head>
+<body>
+<div id="app">
+  <div class="drag-bar" id="dragBar"></div>
+
+  <div class="status-row">
+    <span class="status-dot" id="statusDot"></span>
+    <span class="status-text" id="statusText">工作中</span>
+    <span class="status-time" id="statusTime"></span>
+  </div>
+
+  <div class="amount-section">
+    <div class="equivalent-icon" id="eqIcon">🧋</div>
+    <div class="amount-value" id="amountValue">0.00</div>
+    <div class="amount-unit" id="amountUnit">杯 奶茶</div>
+  </div>
+
+  <div class="money-hint" id="moneyHint">≈ ¥0.00</div>
+
+  <div class="progress-section">
+    <div class="progress-bar">
+      <div class="progress-fill" id="progressFill">
+        <div class="progress-shine"></div>
+      </div>
+    </div>
+    <div class="progress-label">
+      <span id="progressStart">09:00</span>
+      <span id="progressPercent">0%</span>
+      <span id="progressEnd">17:30</span>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="btn-settings" id="btnSettings" title="设置">⚙</button>
+    <button class="btn-hide" id="btnHide" title="最小化到托盘">━</button>
+  </div>
+</div>
+
+<canvas id="particleCanvas"></canvas>
+
+<script src="main-renderer.js"></script>
+</body>
+</html>

@@ -1,0 +1,14 @@
+{
+  "monthlySalary": 25000,
+  "workStart": "09:00",
+  "workEnd": "17:30",
+  "workDays": [1, 2, 3, 4, 5],
+  "equivalents": [
+    { "name": "奶茶", "icon": "🧋", "price": 20 },
+    { "name": "手办", "icon": "👾", "price": 1000 },
+    { "name": "显卡", "icon": "🎮", "price": 15000 },
+    { "name": "辣条", "icon": "🌶️", "price": 2 },
+    { "name": "Switch", "icon": "🕹️", "price": 2000 }
+  ],
+  "selectedEquivalent": 0
+}
