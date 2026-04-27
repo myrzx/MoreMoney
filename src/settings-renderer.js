@@ -102,7 +102,10 @@ elBtnAddEquiv.addEventListener('click', () => {
   renderEquivalents();
 });
 
-elBtnSave.addEventListener('click', async () => {
+elBtnSave.addEventListener('click', () => { doSave(); });
+elBtnClose.addEventListener('click', () => { window.close(); });
+
+async function doSave() {
   try {
     config.monthlySalary = Number(elInputSalary.value) || config.monthlySalary;
     config.workStart = elInputWorkStart.value || config.workStart;
@@ -119,8 +122,8 @@ elBtnSave.addEventListener('click', async () => {
   } catch (e) {
     // save failed — stay open
   }
-});
+}
 
-elBtnClose.addEventListener('click', () => { window.close(); });
+window.__saveSettings = doSave;
 
 loadConfig();

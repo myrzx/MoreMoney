@@ -9,9 +9,8 @@ html, body {
   padding: 0;
   width: 100%;
   height: 100%;
-  background: #0a0e1a;
+  background: transparent;
   overflow: hidden;
-  border-radius: 16px;
 }
 
 body {

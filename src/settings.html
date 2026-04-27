@@ -98,7 +98,7 @@
 <body>
 <div id="settings-app">
   <div class="settings-drag"></div>
-  <button class="close-btn" id="btnClose">✕</button>
+  <button class="close-btn" id="btnClose" onclick="window.close()">✕</button>
   <div class="settings-title">⚙ 薪资设置</div>
 
   <div class="settings-section">
@@ -140,7 +140,7 @@
   </div>
 
   <div class="settings-section">
-    <button class="btn-primary" id="btnSave" style="width:100%">保存设置</button>
+    <button class="btn-primary" id="btnSave" style="width:100%" onclick="window.__saveSettings()">保存设置</button>
   </div>
 </div>
 
