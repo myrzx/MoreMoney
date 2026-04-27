@@ -48,10 +48,6 @@ function calcPerSecondRate(config) {
   return config.monthlySalary / workDaysPerMonth / workHoursPerDay / 3600;
 }
 
-function formatMoney(amount) {
-  return '¥' + amount.toFixed(2);
-}
-
 // --- UI State ---
 
 let config = null;
@@ -67,7 +63,7 @@ let particles = [];
 const elAmount = document.getElementById('amountValue');
 const elUnit = document.getElementById('amountUnit');
 const elIcon = document.getElementById('eqIcon');
-const elMoneyHint = document.getElementById('moneyHint');
+const elEqName = document.getElementById('eqName');
 const elStatusDot = document.getElementById('statusDot');
 const elStatusText = document.getElementById('statusText');
 const elStatusTime = document.getElementById('statusTime');
@@ -161,8 +157,8 @@ function updateDisplay() {
 
   // flash effect when digits change
   const oldStr = elAmount.textContent;
-  const newStr = eqValue.toFixed(2);
-  if (oldStr !== newStr && oldStr !== '0.00') {
+  const newStr = eqValue.toFixed(6);
+  if (oldStr !== newStr && oldStr !== '0.000000') {
     elAmount.style.textShadow = `0 0 30px rgba(251, 191, 36, 0.9), 0 0 60px rgba(251, 191, 36, 0.5), 0 2px 4px rgba(0,0,0,0.5)`;
     setTimeout(() => {
       elAmount.style.textShadow = `0 0 20px rgba(251, 191, 36, 0.6), 0 0 40px rgba(251, 191, 36, 0.3), 0 2px 4px rgba(0,0,0,0.5)`;
@@ -170,9 +166,8 @@ function updateDisplay() {
   }
 
   elAmount.textContent = newStr;
-  elUnit.textContent = `${eq.price < 100 ? '杯' : '个'} ${eq.name}`;
   elIcon.textContent = eq.icon;
-  elMoneyHint.textContent = `≈ ${formatMoney(displayAmount)}`;
+  elEqName.textContent = eq.name;
 
   // progress bar
   const pct = workState.total > 0 ? (workState.elapsed / workState.total * 100) : 0;
@@ -195,7 +190,8 @@ function updateDisplay() {
       break;
     case 'after':
       elStatusText.textContent = '🏁 收工';
-      elStatusTime.textContent = formatMoney(currentAmount);
+      const eqAfter = config.equivalents[equivalentIndex];
+      elStatusTime.textContent = `已赚 ${(currentAmount / eqAfter.price).toFixed(2)} ${eqAfter.name}`;
       break;
     case 'holiday':
       elStatusText.textContent = '🌴 休息日';

@@ -47,7 +47,8 @@ function createMainWindow() {
     x: screenWidth - winW - 20,
     y: screenHeight - winH - 20,
     frame: false,
-    transparent: true,
+    transparent: false,
+    backgroundColor: '#0a0e1a',
     alwaysOnTop: true,
     skipTaskbar: true,
     resizable: false,
@@ -60,6 +61,7 @@ function createMainWindow() {
 
   mainWindow.loadFile(path.join(__dirname, 'src', 'index.html'));
   mainWindow.setVisibleOnAllWorkspaces(true);
+  mainWindow.setIgnoreMouseEvents(false);
 
   mainWindow.on('close', (e) => {
     if (!isQuitting) {
@@ -79,7 +81,8 @@ function createSettingsWindow() {
     width: 460,
     height: 560,
     frame: false,
-    transparent: true,
+    transparent: false,
+    backgroundColor: '#0a0e1a',
     resizable: false,
     parent: mainWindow,
     modal: false,

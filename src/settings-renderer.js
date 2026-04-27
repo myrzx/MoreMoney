@@ -20,7 +20,6 @@ async function loadConfig() {
   elInputWorkStart.value = config.workStart;
   elInputWorkEnd.value = config.workEnd;
 
-  // work days
   const checkboxes = elWorkDaysCheckboxes.querySelectorAll('input[type="checkbox"]');
   checkboxes.forEach(cb => {
     cb.checked = config.workDays.includes(Number(cb.value));
@@ -31,22 +30,38 @@ async function loadConfig() {
 
 function renderEquivalents() {
   elEquivList.innerHTML = '';
+
   config.equivalents.forEach((eq, i) => {
     const div = document.createElement('div');
     div.className = 'equiv-item' + (i === config.selectedEquivalent ? ' selected' : '');
-    div.innerHTML = `
-      <span class="selected-mark">▶</span>
-      <span>${eq.icon || '📦'}</span>
-      <span class="name">${eq.name}</span>
-      <span class="price">¥${eq.price}</span>
-      <button class="btn-danger" data-action="delete" data-index="${i}">删</button>
-    `;
-    div.addEventListener('click', (e) => {
-      if (e.target.dataset.action === 'delete') return;
+
+    const radio = document.createElement('input');
+    radio.type = 'radio';
+    radio.name = 'equiv';
+    radio.value = i;
+    radio.checked = i === config.selectedEquivalent;
+
+    radio.addEventListener('change', () => {
       config.selectedEquivalent = i;
       renderEquivalents();
     });
-    div.querySelector('[data-action="delete"]').addEventListener('click', () => {
+
+    const icon = document.createElement('span');
+    icon.textContent = eq.icon || '📦';
+
+    const nameSpan = document.createElement('span');
+    nameSpan.className = 'name';
+    nameSpan.textContent = eq.name;
+
+    const priceSpan = document.createElement('span');
+    priceSpan.className = 'price';
+    priceSpan.textContent = '¥' + eq.price;
+
+    const delBtn = document.createElement('button');
+    delBtn.className = 'btn-danger';
+    delBtn.textContent = '删';
+    delBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
       if (config.equivalents.length <= 1) return;
       config.equivalents.splice(i, 1);
       if (config.selectedEquivalent >= config.equivalents.length) {
@@ -54,6 +69,19 @@ function renderEquivalents() {
       }
       renderEquivalents();
     });
+
+    // Click on row selects the radio
+    div.addEventListener('click', (e) => {
+      if (e.target === delBtn) return;
+      config.selectedEquivalent = i;
+      renderEquivalents();
+    });
+
+    div.appendChild(radio);
+    div.appendChild(icon);
+    div.appendChild(nameSpan);
+    div.appendChild(priceSpan);
+    div.appendChild(delBtn);
     elEquivList.appendChild(div);
   });
 }
@@ -71,20 +99,24 @@ elBtnAddEquiv.addEventListener('click', () => {
 });
 
 elBtnSave.addEventListener('click', async () => {
-  config.monthlySalary = Number(elInputSalary.value) || config.monthlySalary;
-  config.workStart = elInputWorkStart.value || config.workStart;
-  config.workEnd = elInputWorkEnd.value || config.workEnd;
+  try {
+    config.monthlySalary = Number(elInputSalary.value) || config.monthlySalary;
+    config.workStart = elInputWorkStart.value || config.workStart;
+    config.workEnd = elInputWorkEnd.value || config.workEnd;
 
-  const checkboxes = elWorkDaysCheckboxes.querySelectorAll('input[type="checkbox"]');
-  config.workDays = Array.from(checkboxes)
-    .filter(cb => cb.checked)
-    .map(cb => Number(cb.value))
-    .sort();
+    const checkboxes = elWorkDaysCheckboxes.querySelectorAll('input[type="checkbox"]');
+    config.workDays = Array.from(checkboxes)
+      .filter(cb => cb.checked)
+      .map(cb => Number(cb.value))
+      .sort();
 
-  await window.electronAPI.saveConfig(config);
-  window.close();
+    await window.electronAPI.saveConfig(config);
+    window.close();
+  } catch (e) {
+    // keep window open on save failure
+  }
 });
 
-elBtnClose.addEventListener('click', () => window.close());
+elBtnClose.addEventListener('click', () => { window.close(); });
 
 loadConfig();
