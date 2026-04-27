@@ -22,8 +22,10 @@
     ],
     "win": {
       "target": "portable",
-      "icon": "assets/icon.png"
-    }
+      "icon": "assets/icon.png",
+      "sign": null
+    },
+    "forceCodeSigning": false
   },
   "devDependencies": {
     "electron": "^33.0.0",
