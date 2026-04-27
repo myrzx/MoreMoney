@@ -17,7 +17,6 @@ html, body {
 body {
   font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
   user-select: none;
-  -webkit-app-region: no-drag;
 }
 
 #app {

@@ -13,19 +13,25 @@ const elBtnSave = document.getElementById('btnSave');
 const elBtnClose = document.getElementById('btnClose');
 
 async function loadConfig() {
-  config = await window.electronAPI.loadConfig();
-  if (!config) return;
+  try {
+    config = await window.electronAPI.loadConfig();
+    if (!config) {
+      return;
+    }
+    elInputSalary.value = config.monthlySalary || 25000;
+    elInputWorkStart.value = config.workStart || '09:00';
+    elInputWorkEnd.value = config.workEnd || '17:30';
 
-  elInputSalary.value = config.monthlySalary;
-  elInputWorkStart.value = config.workStart;
-  elInputWorkEnd.value = config.workEnd;
+    const workDays = config.workDays || [1,2,3,4,5];
+    const checkboxes = elWorkDaysCheckboxes.querySelectorAll('input[type="checkbox"]');
+    checkboxes.forEach(cb => {
+      cb.checked = workDays.includes(Number(cb.value));
+    });
 
-  const checkboxes = elWorkDaysCheckboxes.querySelectorAll('input[type="checkbox"]');
-  checkboxes.forEach(cb => {
-    cb.checked = config.workDays.includes(Number(cb.value));
-  });
-
-  renderEquivalents();
+    renderEquivalents();
+  } catch (e) {
+    // config load failed — use nothing
+  }
 }
 
 function renderEquivalents() {
@@ -40,7 +46,6 @@ function renderEquivalents() {
     radio.name = 'equiv';
     radio.value = i;
     radio.checked = i === config.selectedEquivalent;
-
     radio.addEventListener('change', () => {
       config.selectedEquivalent = i;
       renderEquivalents();
@@ -70,7 +75,6 @@ function renderEquivalents() {
       renderEquivalents();
     });
 
-    // Click on row selects the radio
     div.addEventListener('click', (e) => {
       if (e.target === delBtn) return;
       config.selectedEquivalent = i;
@@ -113,7 +117,7 @@ elBtnSave.addEventListener('click', async () => {
     await window.electronAPI.saveConfig(config);
     window.close();
   } catch (e) {
-    // keep window open on save failure
+    // save failed — stay open
   }
 });
 

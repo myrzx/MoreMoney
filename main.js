@@ -77,15 +77,16 @@ function createSettingsWindow() {
     return;
   }
 
+  const { width: sw, height: sh } = screen.getPrimaryDisplay().workAreaSize;
   settingsWindow = new BrowserWindow({
     width: 460,
     height: 560,
+    x: Math.round((sw - 460) / 2),
+    y: Math.round((sh - 560) / 2),
     frame: false,
     transparent: false,
     backgroundColor: '#0a0e1a',
-    resizable: false,
-    parent: mainWindow,
-    modal: false,
+    resizable: true,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
