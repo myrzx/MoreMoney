@@ -80,8 +80,8 @@ const ctx = canvas.getContext('2d');
 // --- Particle System ---
 
 function resizeCanvas() {
-  canvas.width = 320;
-  canvas.height = 220;
+  canvas.width = canvas.clientWidth;
+  canvas.height = canvas.clientHeight;
 }
 
 function spawnParticle() {

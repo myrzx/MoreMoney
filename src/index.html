@@ -8,6 +8,7 @@
 </head>
 <body>
 <div id="app">
+  <canvas id="particleCanvas"></canvas>
   <div class="drag-bar" id="dragBar"></div>
 
   <div class="status-row">
@@ -43,8 +44,6 @@
     <button class="btn-hide" id="btnHide" title="最小化到托盘" onclick="window.electronAPI.hideWindow()">━</button>
   </div>
 </div>
-
-<canvas id="particleCanvas"></canvas>
 
 <script src="main-renderer.js"></script>
 </body>
