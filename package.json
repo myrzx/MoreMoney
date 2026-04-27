@@ -5,7 +5,7 @@
   "main": "main.js",
   "scripts": {
     "start": "electron .",
-    "build": "electron-builder --win portable"
+    "build": "electron-builder --dir"
   },
   "build": {
     "appId": "com.moremoney.app",
@@ -21,11 +21,10 @@
       "assets/**/*"
     ],
     "win": {
-      "target": "portable",
-      "icon": "assets/icon.png",
-      "sign": null
+      "target": "dir",
+      "icon": "assets/icon.png"
     },
-    "forceCodeSigning": false
+    "signAndEditExecutable": false
   },
   "devDependencies": {
     "electron": "^33.0.0",
