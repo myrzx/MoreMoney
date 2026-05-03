@@ -387,8 +387,8 @@ body {
 }
 
 .cal-cell.weekend {
-  background: #000000 !important;
-  border-color: #1a1a30;
+  background: #1a1a10 !important;
+  border-color: #3a3a20;
 }
 
 .cal-cell.no-record {
@@ -407,7 +407,7 @@ body {
 }
 
 .cal-cell.weekend .cal-date {
-  color: #4a4a60;
+  color: #a89060;
 }
 
 .cal-cell.holiday {
