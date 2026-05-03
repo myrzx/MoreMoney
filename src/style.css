@@ -98,6 +98,19 @@ body {
   margin-left: auto;
 }
 
+.multiplier-tag {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+  user-select: none;
+}
+.multiplier-tag.x1 { background: rgba(107, 114, 128, 0.2); color: #9ca3af; }
+.multiplier-tag.x2 { background: rgba(34, 211, 238, 0.15); color: #22d3ee; }
+.multiplier-tag.x3 { background: rgba(251, 191, 36, 0.15); color: #fbbf24; }
+
 .amount-section {
   display: flex;
   align-items: baseline;

@@ -20,17 +20,21 @@ function isWorkday(date, workDays) {
   return workDays.includes(mapped);
 }
 
-function getBreakTotal(config) {
+function getBreakTotal(config, workStart, workEnd) {
   const breaks = config.breaks || [];
-  return breaks.reduce((sum, b) => sum + parseTime(b.end) - parseTime(b.start), 0);
+  return breaks.reduce((sum, b) => {
+    const bStart = Math.max(parseTime(b.start), workStart);
+    const bEnd = Math.min(parseTime(b.end), workEnd);
+    return sum + Math.max(0, bEnd - bStart);
+  }, 0);
 }
 
-function getElapsedBreakSeconds(config, currentSeconds) {
+function getElapsedBreakSeconds(config, currentSeconds, workStart, workEnd) {
   const breaks = config.breaks || [];
   let total = 0;
   for (const b of breaks) {
-    const bStart = parseTime(b.start);
-    const bEnd = parseTime(b.end);
+    const bStart = Math.max(parseTime(b.start), workStart);
+    const bEnd = Math.min(parseTime(b.end), workEnd);
     if (currentSeconds >= bEnd) {
       total += bEnd - bStart;
     } else if (currentSeconds > bStart) {
@@ -57,7 +61,7 @@ function getTodayWorkSeconds(config) {
   const workStart = parseTime(config.workStart);
   const workEnd = parseTime(config.workEnd);
   const currentSeconds = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
-  const breakTotal = getBreakTotal(config);
+  const breakTotal = getBreakTotal(config, workStart, workEnd);
   const totalWork = workEnd - workStart - breakTotal;
 
   if (!isWorkday(now, config.workDays)) {
@@ -74,18 +78,30 @@ function getTodayWorkSeconds(config) {
 
   const brk = getCurrentBreak(config, currentSeconds);
   if (brk) {
-    const elapsed = currentSeconds - workStart - getElapsedBreakSeconds(config, currentSeconds);
+    const elapsed = currentSeconds - workStart - getElapsedBreakSeconds(config, currentSeconds, workStart, workEnd);
     return { status: 'break', elapsed, total: totalWork, breakName: brk.name || '休息' };
   }
 
-  const elapsed = currentSeconds - workStart - getElapsedBreakSeconds(config, currentSeconds);
+  const elapsed = currentSeconds - workStart - getElapsedBreakSeconds(config, currentSeconds, workStart, workEnd);
   return { status: 'working', elapsed, total: totalWork };
 }
 
 function calcPerSecondRate(config) {
   const workDaysPerMonth = 21.75;
   const workHoursPerDay = 8;
-  return config.monthlySalary / workDaysPerMonth / workHoursPerDay / 3600;
+  const multiplier = config.overtimeMultiplier || 1;
+  return config.monthlySalary / workDaysPerMonth / workHoursPerDay / 3600 * multiplier;
+}
+
+function getTodayStr() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function updateMultiplierDisplay() {
+  const m = config.overtimeMultiplier || 1;
+  elMultiplierTag.textContent = m + 'x';
+  elMultiplierTag.className = 'multiplier-tag x' + m;
 }
 
 // --- UI State ---
@@ -108,6 +124,7 @@ const elIcon = document.getElementById('eqIcon');
 const elEqName = document.getElementById('eqName');
 const elStatusDot = document.getElementById('statusDot');
 const elStatusText = document.getElementById('statusText');
+const elMultiplierTag = document.getElementById('multiplierTag');
 const elStatusTime = document.getElementById('statusTime');
 const elProgressFill = document.getElementById('progressFill');
 const elProgressPercent = document.getElementById('progressPercent');
@@ -260,8 +277,17 @@ async function init() {
   config = await window.electronAPI.loadConfig();
   if (!config) return;
 
+  // Reset overtime multiplier to 1x on new day
+  const today = getTodayStr();
+  if (config.overtimeMultiplierDate !== today) {
+    config.overtimeMultiplier = 1;
+    config.overtimeMultiplierDate = today;
+    window.electronAPI.saveConfig(config);
+  }
+
   perSecondRate = calcPerSecondRate(config);
   equivalentIndex = config.selectedEquivalent || 0;
+  updateMultiplierDisplay();
   resetAccumulation();
 
   resizeCanvas();
@@ -277,6 +303,17 @@ async function init() {
   });
   elIcon.style.cursor = 'pointer';
   elIcon.title = '点击切换等价物';
+
+  // Cycle overtime multiplier on click
+  elMultiplierTag.addEventListener('click', () => {
+    const m = config.overtimeMultiplier || 1;
+    config.overtimeMultiplier = m >= 3 ? 1 : m + 1;
+    config.overtimeMultiplierDate = getTodayStr();
+    window.electronAPI.saveConfig(config);
+    perSecondRate = calcPerSecondRate(config);
+    resetAccumulation();
+    updateMultiplierDisplay();
+  });
 
   elBtnSettings.addEventListener('click', () => window.electronAPI.openSettings());
   elBtnHide.addEventListener('click', () => window.electronAPI.hideWindow());
@@ -297,6 +334,7 @@ async function reloadConfig() {
   config = newConfig;
   perSecondRate = calcPerSecondRate(config);
   equivalentIndex = config.selectedEquivalent || 0;
+  updateMultiplierDisplay();
   resetAccumulation();
 }
 

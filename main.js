@@ -79,9 +79,9 @@ function createSettingsWindow() {
 
   const { width: sw, height: sh } = screen.getPrimaryDisplay().workAreaSize;
   settingsWindow = new BrowserWindow({
-    width: 460,
+    width: 520,
     height: 560,
-    x: Math.round((sw - 460) / 2),
+    x: Math.round((sw - 520) / 2),
     y: Math.round((sh - 560) / 2),
     frame: false,
     transparent: true,
@@ -154,9 +154,14 @@ function showNotification() {
   const workStart = parseTime(config.workStart);
   const workEnd = parseTime(config.workEnd);
   const breaks = config.breaks || [];
-  const breakTotal = breaks.reduce((sum, b) => sum + parseTime(b.end) - parseTime(b.start), 0);
+  const breakTotal = breaks.reduce((sum, b) => {
+    const bStart = Math.max(parseTime(b.start), workStart);
+    const bEnd = Math.min(parseTime(b.end), workEnd);
+    return sum + Math.max(0, bEnd - bStart);
+  }, 0);
   const workSeconds = workEnd - workStart - breakTotal;
-  const perSecond = config.monthlySalary / 21.75 / 8 / 3600;
+  const multiplier = config.overtimeMultiplier || 1;
+  const perSecond = config.monthlySalary / 21.75 / 8 / 3600 * multiplier;
   const earned = perSecond * workSeconds;
   const count = (earned / eq.price).toFixed(2);
 

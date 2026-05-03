@@ -4,7 +4,8 @@
   "workEnd": "17:30",
   "workDays": [1, 2, 3, 4, 5],
   "breaks": [
-    { "start": "12:00", "end": "13:30" }
+    { "start": "12:00", "end": "13:30" },
+    { "start": "17:30", "end": "18:00" }
   ],
   "reminderEnabled": true,
   "equivalents": [
@@ -14,5 +15,7 @@
     { "name": "辣条", "icon": "🌶️", "price": 2 },
     { "name": "Switch", "icon": "🕹️", "price": 2000 }
   ],
-  "selectedEquivalent": 0
+  "selectedEquivalent": 0,
+  "overtimeMultiplier": 1,
+  "overtimeMultiplierDate": ""
 }
