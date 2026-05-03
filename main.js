@@ -1,4 +1,4 @@
-const { app, BrowserWindow, Tray, Menu, ipcMain, nativeImage, screen } = require('electron');
+const { app, BrowserWindow, Tray, Menu, ipcMain, nativeImage, screen, Notification } = require('electron');
 const path = require('path');
 const fs = require('fs');
 
@@ -6,6 +6,7 @@ let mainWindow = null;
 let settingsWindow = null;
 let tray = null;
 let isQuitting = false;
+let reminderTimer = null;
 
 const configPath = path.join(app.getPath('userData'), 'config.json');
 const defaultConfigPath = path.join(__dirname, 'config.json');
@@ -132,15 +133,54 @@ function createTray() {
   });
 }
 
+// --- Clock-out Reminder ---
+
+function isWorkday(date, workDays) {
+  const jsDay = date.getDay();
+  const mapped = jsDay === 0 ? 7 : jsDay;
+  return workDays.includes(mapped);
+}
+
+function showNotification() {
+  const config = loadConfig();
+  if (!config) return;
+  const eq = config.equivalents[config.selectedEquivalent || 0];
+  new Notification({
+    title: '下班啦！',
+    body: `到点了，该收工了 🏁 今天已赚 ${eq.icon} ${eq.name}`
+  }).show();
+}
+
+function scheduleReminder() {
+  if (reminderTimer) clearTimeout(reminderTimer);
+  const config = loadConfig();
+  if (!config) return;
+
+  const [endH, endM] = config.workEnd.split(':').map(Number);
+  const now = new Date();
+  let target = new Date(now.getFullYear(), now.getMonth(), now.getDate(), endH, endM, 0);
+
+  while (target <= now || !isWorkday(target, config.workDays)) {
+    target.setDate(target.getDate() + 1);
+  }
+
+  const delay = target - now;
+  reminderTimer = setTimeout(() => {
+    showNotification();
+    scheduleReminder();
+  }, delay);
+}
+
 // IPC handlers
 ipcMain.handle('load-config', () => loadConfig());
-ipcMain.handle('save-config', (_e, config) => { saveConfig(config); return true; });
+ipcMain.handle('save-config', (_e, config) => { saveConfig(config); scheduleReminder(); return true; });
 ipcMain.handle('open-settings', () => { createSettingsWindow(); });
 ipcMain.handle('hide-window', () => { mainWindow.hide(); });
 
 app.whenReady().then(() => {
   createMainWindow();
   createTray();
+  scheduleReminder();
 });
 
 app.on('before-quit', () => { isQuitting = true; });

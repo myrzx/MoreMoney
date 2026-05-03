@@ -58,6 +58,8 @@ let displayAmount = 0;
 let lastTick = Date.now();
 let particles = [];
 
+const MAX_PARTICLES = 200;
+
 // --- DOM Elements ---
 
 const elAmount = document.getElementById('amountValue');
@@ -95,7 +97,7 @@ function spawnParticle() {
   };
 }
 
-function updateParticles() {
+function updateParticles(workState, dt) {
   for (let i = particles.length - 1; i >= 0; i--) {
     const p = particles[i];
     p.y -= p.speed;
@@ -105,21 +107,21 @@ function updateParticles() {
       particles.splice(i, 1);
     }
   }
-  // spawn new particles based on status
-  const workState = getTodayWorkSeconds(config);
-  const spawnRate = workState.status === 'working' ? 0.5 : 0.05;
-  if (Math.random() < spawnRate) {
-    particles.push(spawnParticle());
+  // skip spawning after long pause (sleep/wake) to prevent burst
+  if (dt < 1 && particles.length < MAX_PARTICLES) {
+    const spawnRate = workState.status === 'working' ? 0.5 : 0.05;
+    if (Math.random() < spawnRate) {
+      particles.push(spawnParticle());
+    }
   }
 }
 
-function drawParticles() {
+function drawParticles(workState) {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
+  const baseColor = workState.status === 'working' ? '34, 211, 238' : '107, 114, 128';
   for (const p of particles) {
     ctx.beginPath();
     const gradient = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.size * 2);
-    const baseColor = config && getTodayWorkSeconds(config).status === 'working'
-      ? '34, 211, 238' : '107, 114, 128';
     gradient.addColorStop(0, `rgba(${baseColor}, ${p.opacity})`);
     gradient.addColorStop(1, `rgba(${baseColor}, 0)`);
     ctx.fillStyle = gradient;
@@ -132,16 +134,14 @@ function drawParticles() {
 
 function updateDisplay() {
   const now = Date.now();
+  const dt = (now - lastTick) / 1000;
+  lastTick = now;
 
   // update accumulation
   const workState = getTodayWorkSeconds(config);
-  if (workState.status === 'working') {
-    const dt = (now - lastTick) / 1000;
-    if (dt > 0 && dt < 10) {
-      currentAmount += perSecondRate * dt;
-    }
+  if (workState.status === 'working' && dt > 0 && dt < 10) {
+    currentAmount += perSecondRate * dt;
   }
-  lastTick = now;
 
   // smoothly animate to currentAmount
   const lerpSpeed = 0.08;
@@ -199,8 +199,8 @@ function updateDisplay() {
       break;
   }
 
-  updateParticles();
-  drawParticles();
+  updateParticles(workState, dt);
+  drawParticles(workState);
 }
 
 // --- Init ---
@@ -237,27 +237,26 @@ async function init() {
   elBtnSettings.addEventListener('click', () => window.electronAPI.openSettings());
   elBtnHide.addEventListener('click', () => window.electronAPI.hideWindow());
 
+  lastTick = Date.now();
   setInterval(updateDisplay, 100);
   setInterval(resetAccumulation, 60000); // recalculate every minute to stay accurate
 
-  // Listen for config updates from settings window
-  window.addEventListener('storage', async () => {
-    config = await window.electronAPI.loadConfig();
-    perSecondRate = calcPerSecondRate(config);
-    equivalentIndex = config.selectedEquivalent || 0;
-    resetAccumulation();
+  // Pause CSS animations when window is hidden
+  document.addEventListener('visibilitychange', () => {
+    document.getElementById('app').classList.toggle('paused', document.hidden);
   });
 }
 
-// Reload config when focus returns (settings might have changed)
-window.addEventListener('focus', async () => {
+async function reloadConfig() {
   const newConfig = await window.electronAPI.loadConfig();
-  if (JSON.stringify(newConfig) !== JSON.stringify(config)) {
-    config = newConfig;
-    perSecondRate = calcPerSecondRate(config);
-    equivalentIndex = config.selectedEquivalent || 0;
-    resetAccumulation();
-  }
-});
+  if (!newConfig) return;
+  config = newConfig;
+  perSecondRate = calcPerSecondRate(config);
+  equivalentIndex = config.selectedEquivalent || 0;
+  resetAccumulation();
+}
+
+// Reload config when focus returns (settings might have changed)
+window.addEventListener('focus', () => reloadConfig());
 
 init();
