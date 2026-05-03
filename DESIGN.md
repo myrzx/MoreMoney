@@ -176,7 +176,7 @@ Canvas 2D 绘制，每个粒子上升 + 水平漂移 + 渐隐：
 }
 ```
 
-### 6. 工时统计 (`src/stats.html` + `src/stats-renderer.js`)
+### 6. 日历 (`src/calendar.html` + `src/calendar-renderer.js`)
 
 日历视图展示每日工时，支持手动打卡：
 
@@ -264,6 +264,6 @@ MoreMoney/
     ├── main-renderer.js # 薪资引擎 + 粒子 + UI 逻辑
     ├── settings.html    # 设置面板 DOM + 内联样式
     ├── settings-renderer.js # 设置面板逻辑
-    ├── stats.html       # 工时统计 DOM
-    └── stats-renderer.js # 日历渲染 + 打卡逻辑
+    ├── calendar.html       # 日历 DOM
+    └── calendar-renderer.js # 日历渲染 + 打卡逻辑
 ```

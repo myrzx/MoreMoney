@@ -3,7 +3,6 @@ let config = null;
 const elInputSalary = document.getElementById('inputSalary');
 const elInputWorkStart = document.getElementById('inputWorkStart');
 const elInputWorkEnd = document.getElementById('inputWorkEnd');
-const elWorkDaysCheckboxes = document.getElementById('workDaysCheckboxes');
 const elEquivList = document.getElementById('equivList');
 const elInputEqName = document.getElementById('inputEqName');
 const elInputEqIcon = document.getElementById('inputEqIcon');
@@ -28,12 +27,6 @@ async function loadConfig() {
     elInputSalary.value = config.monthlySalary || 25000;
     elInputWorkStart.value = config.workStart || '09:00';
     elInputWorkEnd.value = config.workEnd || '17:30';
-
-    const workDays = config.workDays || [1,2,3,4,5];
-    const checkboxes = elWorkDaysCheckboxes.querySelectorAll('input[type="checkbox"]');
-    checkboxes.forEach(cb => {
-      cb.checked = workDays.includes(Number(cb.value));
-    });
 
     elInputReminder.checked = config.reminderEnabled !== false;
 
@@ -162,12 +155,6 @@ async function doSave() {
     config.monthlySalary = Number(elInputSalary.value) || config.monthlySalary;
     config.workStart = elInputWorkStart.value || config.workStart;
     config.workEnd = elInputWorkEnd.value || config.workEnd;
-
-    const checkboxes = elWorkDaysCheckboxes.querySelectorAll('input[type="checkbox"]');
-    config.workDays = Array.from(checkboxes)
-      .filter(cb => cb.checked)
-      .map(cb => Number(cb.value))
-      .sort();
 
     config.reminderEnabled = elInputReminder.checked;
 

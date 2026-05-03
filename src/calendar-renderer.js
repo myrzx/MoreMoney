@@ -2,6 +2,7 @@ let currentYear, currentMonth; // 0-indexed month
 let records = {};
 let config = null;
 let holidays = {};
+let dayOverrides = {};
 let activePopup = null;
 
 const elMonthTitle = document.getElementById('monthTitle');
@@ -31,12 +32,15 @@ function getHolidayInfo(ds) {
   return yearHolidays ? yearHolidays[ds] : null;
 }
 
-function isEffectiveWorkday(ds, workDays) {
+function isEffectiveWorkday(ds, workDays, overrides) {
+  if (overrides && overrides[ds] !== undefined) {
+    return overrides[ds] === 'work';
+  }
   const info = getHolidayInfo(ds);
   if (info) return info.type === 'workday';
   const jsDay = new Date(ds).getDay();
   const mapped = jsDay === 0 ? 7 : jsDay;
-  return workDays.includes(mapped);
+  return [1, 2, 3, 4, 5].includes(mapped);
 }
 
 function renderCalendar() {
@@ -48,7 +52,6 @@ function renderCalendar() {
 
   const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
   const today = getTodayStr();
-  const workDays = config ? config.workDays : [1, 2, 3, 4, 5];
 
   let html = '';
   let totalDays = 0, totalHours = 0;
@@ -60,7 +63,7 @@ function renderCalendar() {
   for (let d = 1; d <= daysInMonth; d++) {
     const ds = dateStr(currentYear, currentMonth, d);
     const holidayInfo = getHolidayInfo(ds);
-    const isWorkday = isEffectiveWorkday(ds, workDays);
+    const isWorkday = isEffectiveWorkday(ds, null, dayOverrides);
     const isToday = ds === today;
     const rec = records[ds];
 
@@ -74,6 +77,10 @@ function renderCalendar() {
     } else if (!isWorkday) {
       cls += ' weekend';
     }
+
+    const override = dayOverrides[ds];
+    if (override === 'work') cls += ' override-work';
+    if (override === 'rest') cls += ' override-rest';
 
     let content = `<span class="cal-date">${d}</span>`;
 
@@ -102,20 +109,28 @@ function renderCalendar() {
       }
     }
 
-    if (isWorkday) {
-      html += `<div class="${cls}" data-date="${ds}">${content}</div>`;
-    } else {
-      html += `<div class="${cls}">${content}</div>`;
-    }
+    html += `<div class="${cls}" data-date="${ds}" data-is-workday="${isWorkday}">${content}</div>`;
   }
 
   elCalendarGrid.innerHTML = html;
 
-  // bind click events on workday cells
+  // bind events on calendar cells
   elCalendarGrid.querySelectorAll('.cal-cell[data-date]').forEach(cell => {
-    cell.addEventListener('click', (e) => {
+    const ds = cell.dataset.date;
+
+    // left-click popup only for workdays
+    if (cell.dataset.isWorkday === 'true') {
+      cell.addEventListener('click', (e) => {
+        e.stopPropagation();
+        showClockPopup(ds, cell);
+      });
+    }
+
+    // right-click context menu for all cells
+    cell.addEventListener('contextmenu', (e) => {
+      e.preventDefault();
       e.stopPropagation();
-      showClockPopup(cell.dataset.date, cell);
+      showContextMenu(ds, cell.dataset.isWorkday === 'true', e.clientX, e.clientY);
     });
   });
 
@@ -237,6 +252,74 @@ function parseTime(timeStr) {
   return h * 3600 + m * 60;
 }
 
+// --- Context Menu ---
+
+let activeContextMenu = null;
+
+function closeContextMenu() {
+  if (activeContextMenu) {
+    activeContextMenu.remove();
+    activeContextMenu = null;
+  }
+}
+
+function createMenuItem(icon, label, onClick) {
+  const item = document.createElement('div');
+  item.className = 'context-menu-item';
+  item.innerHTML = `<span>${icon}</span><span>${label}</span>`;
+  item.addEventListener('click', (e) => {
+    e.stopPropagation();
+    onClick();
+    closeContextMenu();
+  });
+  return item;
+}
+
+function showContextMenu(ds, isCurrentlyWorkday, x, y) {
+  closeContextMenu();
+
+  const menu = document.createElement('div');
+  menu.className = 'context-menu';
+  menu.style.left = `${x}px`;
+  menu.style.top = `${y}px`;
+
+  if (isCurrentlyWorkday) {
+    menu.appendChild(createMenuItem('🏖', '标记为休息日', () => saveOverride(ds, 'rest')));
+  } else {
+    menu.appendChild(createMenuItem('⛏', '标记为工作日', () => saveOverride(ds, 'work')));
+  }
+
+  if (dayOverrides[ds]) {
+    const sep = document.createElement('div');
+    sep.className = 'context-menu-separator';
+    menu.appendChild(sep);
+    menu.appendChild(createMenuItem('↩', '恢复默认', () => saveOverride(ds, null)));
+  }
+
+  document.body.appendChild(menu);
+  activeContextMenu = menu;
+
+  requestAnimationFrame(() => {
+    const mr = menu.getBoundingClientRect();
+    if (mr.right > window.innerWidth) {
+      menu.style.left = `${window.innerWidth - mr.width - 4}px`;
+    }
+    if (mr.bottom > window.innerHeight) {
+      menu.style.top = `${window.innerHeight - mr.height - 4}px`;
+    }
+  });
+
+  setTimeout(() => {
+    document.addEventListener('click', closeContextMenu, { once: true });
+    document.addEventListener('contextmenu', closeContextMenu, { once: true });
+  }, 0);
+}
+
+async function saveOverride(ds, type) {
+  dayOverrides = await window.electronAPI.saveDayOverrides(ds, type);
+  renderCalendar();
+}
+
 function navigateMonth(delta) {
   currentMonth += delta;
   if (currentMonth < 0) { currentMonth = 11; currentYear--; }
@@ -249,6 +332,7 @@ async function init() {
   config = await window.electronAPI.loadConfig();
   records = await window.electronAPI.loadRecords();
   holidays = await window.electronAPI.loadHolidays() || {};
+  dayOverrides = await window.electronAPI.loadDayOverrides() || {};
 
   const now = new Date();
   currentYear = now.getFullYear();

@@ -23,7 +23,7 @@ Three-process Electron model with contextIsolation enabled and nodeIntegration d
 **Renderers** (`src/`): Three separate HTML pages, each with its own JS:
 - `main-renderer.js` — salary engine (per-second rate calculation, break deduction), particle system (Canvas 2D, max 200 particles), UI update loop (100ms display, 60ms recalibration)
 - `settings-renderer.js` — config form (salary, hours, breaks, equivalents, workday checkboxes)
-- `stats-renderer.js` — monthly calendar with manual clock-in/out popup, summary stats
+- `calendar-renderer.js` — monthly calendar with manual clock-in/out popup, summary stats
 
 Shared CSS: `src/style.css` (RPG pixel theme, Zpix + Press Start 2P fonts, scanline overlay).
 
@@ -41,7 +41,7 @@ earned = perSecond * (workSeconds - breakSeconds)
 equivalent count = earned / equivalent.price
 ```
 
-The `isWorkday()` function exists in three places (main.js, main-renderer.js, stats-renderer.js) — all must accept holidays parameter and check holidays first, then fall back to `workDays` config array.
+The `isWorkday()` function exists in three places (main.js, main-renderer.js, calendar-renderer.js) — all must accept holidays parameter and check holidays first, then fall back to `workDays` config array.
 
 ## Key conventions
 

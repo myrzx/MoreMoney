@@ -2,7 +2,6 @@
   "monthlySalary": 25000,
   "workStart": "09:00",
   "workEnd": "17:30",
-  "workDays": [1, 2, 3, 4, 5],
   "breaks": [
     { "start": "12:00", "end": "13:30" },
     { "start": "17:30", "end": "18:00" }

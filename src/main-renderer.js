@@ -12,8 +12,11 @@ function secondsToHMS(totalSeconds) {
   return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
 }
 
-function isWorkday(date, workDays, holidays) {
+function isWorkday(date, workDays, holidays, dayOverrides) {
   const ds = `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
+  if (dayOverrides && dayOverrides[ds] !== undefined) {
+    return dayOverrides[ds] === 'work';
+  }
   const year = ds.substring(0, 4);
   const yearHolidays = holidays[year];
   if (yearHolidays && yearHolidays[ds]) {
@@ -21,7 +24,7 @@ function isWorkday(date, workDays, holidays) {
   }
   const jsDay = date.getDay();
   const mapped = jsDay === 0 ? 7 : jsDay;
-  return workDays.includes(mapped);
+  return [1, 2, 3, 4, 5].includes(mapped);
 }
 
 function getBreakTotal(config, workStart, workEnd) {
@@ -68,7 +71,7 @@ function getTodayWorkSeconds(config) {
   const breakTotal = getBreakTotal(config, workStart, workEnd);
   const totalWork = workEnd - workStart - breakTotal;
 
-  if (!isWorkday(now, config.workDays, holidays)) {
+  if (!isWorkday(now, config.workDays, holidays, dayOverrides)) {
     return { status: 'holiday', elapsed: 0, total: totalWork };
   }
 
@@ -112,6 +115,7 @@ function updateMultiplierDisplay() {
 
 let config = null;
 let holidays = {};
+let dayOverrides = {};
 let perSecondRate = 0;
 let currentAmount = 0;
 let equivalentIndex = 0;
@@ -280,6 +284,7 @@ async function init() {
   if (!config) return;
 
   holidays = await window.electronAPI.loadHolidays() || {};
+  dayOverrides = await window.electronAPI.loadDayOverrides() || {};
 
   // Reset overtime multiplier to 1x on new day
   const today = getTodayStr();
@@ -337,6 +342,7 @@ async function reloadConfig() {
   if (!newConfig) return;
   config = newConfig;
   holidays = await window.electronAPI.loadHolidays() || {};
+  dayOverrides = await window.electronAPI.loadDayOverrides() || {};
   perSecondRate = calcPerSecondRate(config);
   equivalentIndex = config.selectedEquivalent || 0;
   updateMultiplierDisplay();

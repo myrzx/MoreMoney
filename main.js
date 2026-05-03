@@ -4,7 +4,7 @@ const fs = require('fs');
 
 let mainWindow = null;
 let settingsWindow = null;
-let statsWindow = null;
+let calendarWindow = null;
 let tray = null;
 let isQuitting = false;
 let reminderTimer = null;
@@ -189,10 +189,11 @@ function autoRecord() {
   const records = loadRecords();
   const today = getTodayStr();
   const holidays = loadHolidays();
+  const dayOverrides = records.dayOverrides || {};
 
   // skip creating records for holidays
   const now = new Date();
-  if (!isWorkday(now, config.workDays, holidays)) return;
+  if (!isWorkday(now, config.workDays, holidays, dayOverrides)) return;
 
   if (!records[today]) {
     records[today] = {
@@ -232,16 +233,16 @@ function autoRecord() {
   saveRecords(records);
 }
 
-// --- Stats Window ---
+// --- Calendar Window ---
 
-function createStatsWindow() {
-  if (statsWindow) {
-    statsWindow.focus();
+function createCalendarWindow() {
+  if (calendarWindow) {
+    calendarWindow.focus();
     return;
   }
 
   const { width: sw, height: sh } = screen.getPrimaryDisplay().workAreaSize;
-  statsWindow = new BrowserWindow({
+  calendarWindow = new BrowserWindow({
     width: 520,
     height: 640,
     x: Math.round((sw - 520) / 2),
@@ -256,8 +257,8 @@ function createStatsWindow() {
     }
   });
 
-  statsWindow.loadFile(path.join(__dirname, 'src', 'stats.html'));
-  statsWindow.on('closed', () => { statsWindow = null; });
+  calendarWindow.loadFile(path.join(__dirname, 'src', 'calendar.html'));
+  calendarWindow.on('closed', () => { calendarWindow = null; });
 }
 
 // --- Clock-out Reminder ---
@@ -271,8 +272,11 @@ function formatDate(date) {
   return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
 }
 
-function isWorkday(date, workDays, holidays) {
+function isWorkday(date, workDays, holidays, dayOverrides) {
   const ds = formatDate(date);
+  if (dayOverrides && dayOverrides[ds] !== undefined) {
+    return dayOverrides[ds] === 'work';
+  }
   const year = ds.substring(0, 4);
   const yearHolidays = holidays[year];
   if (yearHolidays && yearHolidays[ds]) {
@@ -280,7 +284,7 @@ function isWorkday(date, workDays, holidays) {
   }
   const jsDay = date.getDay();
   const mapped = jsDay === 0 ? 7 : jsDay;
-  return workDays.includes(mapped);
+  return [1, 2, 3, 4, 5].includes(mapped);
 }
 
 function showNotification() {
@@ -314,11 +318,13 @@ function scheduleReminder() {
   if (!config || !config.reminderEnabled) return;
 
   const holidays = loadHolidays();
+  const records = loadRecords();
+  const dayOverrides = records.dayOverrides || {};
   const [endH, endM] = config.workEnd.split(':').map(Number);
   const now = new Date();
   let target = new Date(now.getFullYear(), now.getMonth(), now.getDate(), endH, endM, 0);
 
-  while (target <= now || !isWorkday(target, config.workDays, holidays)) {
+  while (target <= now || !isWorkday(target, config.workDays, holidays, dayOverrides)) {
     target.setDate(target.getDate() + 1);
   }
 
@@ -334,7 +340,7 @@ ipcMain.handle('load-config', () => loadConfig());
 ipcMain.handle('load-holidays', () => loadHolidays());
 ipcMain.handle('save-config', (_e, config) => { saveConfig(config); scheduleReminder(); return true; });
 ipcMain.handle('open-settings', () => { createSettingsWindow(); });
-ipcMain.handle('open-stats', () => { createStatsWindow(); });
+ipcMain.handle('open-calendar', () => { createCalendarWindow(); });
 ipcMain.handle('hide-window', () => { mainWindow.hide(); });
 ipcMain.handle('test-reminder', () => { showNotification(); return true; });
 ipcMain.handle('load-records', () => loadRecords());
@@ -343,6 +349,21 @@ ipcMain.handle('save-record', (_e, date, record) => {
   records[date] = record;
   saveRecords(records);
   return true;
+});
+ipcMain.handle('load-day-overrides', () => {
+  const records = loadRecords();
+  return records.dayOverrides || {};
+});
+ipcMain.handle('save-day-overrides', (_e, date, type) => {
+  const records = loadRecords();
+  if (!records.dayOverrides) records.dayOverrides = {};
+  if (type === null) {
+    delete records.dayOverrides[date];
+  } else {
+    records.dayOverrides[date] = type;
+  }
+  saveRecords(records);
+  return records.dayOverrides;
 });
 
 app.whenReady().then(() => {
