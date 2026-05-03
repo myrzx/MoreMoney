@@ -5,185 +5,195 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="stylesheet" href="style.css">
 <style>
-  body { display: flex; justify-content: center; align-items: center; height: 100vh; background: transparent; }
-  #settings-app {
-    width: 480px;
-    max-height: 540px;
-    overflow-y: auto;
-    background: linear-gradient(135deg, #0a0e1a 0%, #111827 50%, #0a0e1a 100%);
-    border: 1px solid rgba(34, 211, 238, 0.2);
-    border-radius: 16px;
-    padding: 28px 24px 20px;
-    box-shadow: 0 0 30px rgba(6, 182, 212, 0.08);
-    color: #d1d5db;
+  body { display: flex; justify-content: center; align-items: center; height: 100vh; background: transparent; font-family: 'Zpix', monospace; -webkit-font-smoothing: none; }
+  #settingsApp {
+    width: 500px;
+    height: 560px;
+    background: #0f1a2e;
+    border: 2px solid #3a3a5c;
+    box-shadow: inset 0 0 0 1px #5a5a8c;
     position: relative;
+    overflow: hidden;
+    color: #f5f0dc;
   }
-  .settings-drag { height: 32px; -webkit-app-region: drag; cursor: grab; position: absolute; top: 0; left: 0; right: 0; z-index: 1; }
+  #settings-app {
+    width: 100%;
+    height: 100%;
+    overflow-y: auto;
+    padding: 32px 24px 40px;
+  }
+  .settings-drag { height: 28px; -webkit-app-region: drag; cursor: grab; position: absolute; top: 0; left: 0; right: 0; z-index: 1; }
   .settings-section { margin-bottom: 18px; }
-  .settings-label { font-size: 11px; color: #9ca3af; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+  .settings-label { font-size: 11px; color: #8a8a9a; text-transform: uppercase; letter-spacing: 0; margin-bottom: 6px; }
   .settings-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
   .settings-input {
-    background: rgba(255,255,255,0.06);
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 8px;
-    color: #e5e7eb;
+    background: #0a1020;
+    border: 1px solid #3a3a5c;
+    border-radius: 0;
+    color: #f5f0dc;
     padding: 8px 12px;
     font-size: 13px;
+    font-family: 'Zpix', monospace;
     width: 100%;
     outline: none;
-    transition: border-color 0.2s;
     -webkit-app-region: no-drag;
   }
-  .settings-input:focus { border-color: #22d3ee; }
+  .settings-input:focus { border-color: #e6b800; }
   .settings-input.time-input { width: 130px; flex: none; }
   .btn-primary {
-    background: linear-gradient(135deg, #06b6d4, #0891b2);
-    border: none;
-    color: white;
-    border-radius: 8px;
+    background: #1a2540;
+    border: 1px solid #3a3a5c;
+    color: #e6b800;
+    border-radius: 0;
     padding: 8px 16px;
     font-size: 13px;
+    font-family: 'Zpix', monospace;
     cursor: pointer;
-    transition: all 0.2s;
     -webkit-app-region: no-drag;
+    box-shadow: inset 0 0 0 1px #5a5a8c;
   }
-  .btn-primary:hover { box-shadow: 0 0 16px rgba(6, 182, 212, 0.4); }
+  .btn-primary:hover { background: #2a3550; border-color: #e6b800; }
   .btn-danger {
-    background: rgba(239, 68, 68, 0.15);
-    border: 1px solid rgba(239, 68, 68, 0.3);
-    color: #fca5a5;
-    border-radius: 8px;
+    background: #1a2540;
+    border: 1px solid #5c3a3a;
+    color: #f87171;
+    border-radius: 0;
     padding: 4px 10px;
     font-size: 11px;
+    font-family: 'Zpix', monospace;
     cursor: pointer;
     -webkit-app-region: no-drag;
   }
-  .btn-danger:hover { background: rgba(239, 68, 68, 0.3); }
+  .btn-danger:hover { background: #2a1520; border-color: #f87171; }
   .eye-btn {
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.1);
-    color: #9ca3af;
+    background: #1a2540;
+    border: 1px solid #3a3a5c;
+    color: #8a8a9a;
     width: 36px;
     height: 36px;
-    border-radius: 8px;
+    border-radius: 0;
     cursor: pointer;
     font-size: 16px;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.2s;
     -webkit-app-region: no-drag;
     flex-shrink: 0;
+    box-shadow: inset 0 0 0 1px #5a5a8c;
   }
-  .eye-btn:hover { background: rgba(34, 211, 238, 0.15); border-color: rgba(34, 211, 238, 0.4); }
+  .eye-btn:hover { background: #2a3550; color: #e6b800; border-color: #e6b800; }
   .equiv-list { max-height: 180px; overflow-y: auto; }
   .equiv-item {
     display: flex;
     align-items: center;
     gap: 8px;
     padding: 6px 4px;
-    border-bottom: 1px solid rgba(255,255,255,0.04);
+    border-bottom: 1px solid #1a1a30;
     font-size: 13px;
     cursor: pointer;
     -webkit-app-region: no-drag;
   }
-  .equiv-item:hover { background: rgba(255,255,255,0.02); border-radius: 6px; }
-  .equiv-item.selected { background: rgba(34,211,238,0.06); border-radius: 6px; }
-  .equiv-item input[type="radio"] { accent-color: #22d3ee; cursor: pointer; }
+  .equiv-item:hover { background: #1a2540; }
+  .equiv-item.selected { background: #1a2540; border-left: 2px solid #e6b800; }
+  .equiv-item input[type="radio"] { accent-color: #e6b800; cursor: pointer; }
   .equiv-item .name { flex: 1; }
-  .equiv-item .price { color: #fbbf24; font-variant-numeric: tabular-nums; margin-right: 4px; }
+  .equiv-item .price { color: #e6b800; font-variant-numeric: tabular-nums; margin-right: 4px; }
   .add-equiv-row { display: flex; gap: 6px; margin-top: 8px; }
   .break-item {
     display: flex; align-items: center; gap: 8px;
     padding: 6px 4px; font-size: 13px;
-    border-bottom: 1px solid rgba(255,255,255,0.04);
+    border-bottom: 1px solid #1a1a30;
   }
   .break-item .break-time { flex: 1; color: #a78bfa; }
-  .close-btn {
-    position: absolute; top: 6px; right: 14px;
-    background: none; border: none; color: #6b7280; font-size: 20px; cursor: pointer;
-    z-index: 10; -webkit-app-region: no-drag;
+  #settingsApp .actions {
+    position: absolute;
+    bottom: 8px;
+    right: 12px;
   }
-  .close-btn:hover { color: #fbbf24; }
 
-  .wday-label { display: flex; align-items: center; gap: 4px; font-size: 12px; color: #9ca3af; cursor: pointer; padding: 2px 4px; -webkit-app-region: no-drag; }
-  .wday-label input[type="checkbox"] { accent-color: #22d3ee; }
+  .wday-label { display: flex; align-items: center; gap: 4px; font-size: 12px; color: #8a8a9a; cursor: pointer; padding: 2px 4px; -webkit-app-region: no-drag; }
+  .wday-label input[type="checkbox"] { accent-color: #e6b800; }
 
   #settings-app::-webkit-scrollbar { width: 4px; }
-  #settings-app::-webkit-scrollbar-track { background: transparent; }
-  #settings-app::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 2px; }
+  #settings-app::-webkit-scrollbar-track { background: #0a1020; }
+  #settings-app::-webkit-scrollbar-thumb { background: #3a3a5c; }
 
   input[type="time"]::-webkit-calendar-picker-indicator { filter: invert(0.7); cursor: pointer; }
 </style>
 <title>MoreMoney 设置</title>
 </head>
 <body>
-<div id="settings-app">
+<div id="settingsApp">
   <div class="settings-drag"></div>
-  <button class="close-btn" id="btnClose" onclick="window.close()">✕</button>
 
-  <div class="settings-section">
-    <div class="settings-label">每月大米（￥）</div>
-    <div class="settings-row">
-      <input class="settings-input" id="inputSalary" type="password" step="100" min="0" style="flex:1">
-      <button class="eye-btn" id="btnEye" type="button">👁</button>
+  <div id="settings-app">
+    <div class="settings-section">
+      <div class="settings-label">每月大米（￥）</div>
+      <div class="settings-row">
+        <input class="settings-input" id="inputSalary" type="password" step="100" min="0" style="flex:1">
+        <button class="eye-btn" id="btnEye" type="button">👁</button>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <div class="settings-label">工作时间</div>
+      <div class="settings-row">
+        <input class="settings-input time-input" id="inputWorkStart" type="time">
+        <span style="color:#6b7280">至</span>
+        <input class="settings-input time-input" id="inputWorkEnd" type="time">
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <div class="settings-label">休息时间（不计工时）</div>
+      <div class="break-list" id="breakList"></div>
+      <div class="settings-row" style="margin-top:8px">
+        <input class="settings-input time-input" id="inputBreakStart" type="time">
+        <span style="color:#6b7280">至</span>
+        <input class="settings-input time-input" id="inputBreakEnd" type="time">
+        <button class="btn-primary" id="btnAddBreak">+</button>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <div class="settings-label">下班提醒</div>
+      <div class="settings-row" style="align-items:center;gap:12px">
+        <label class="wday-label"><input type="checkbox" id="inputReminder"> 到点提醒下班</label>
+        <button class="btn-primary" id="btnTestReminder" style="margin-left:auto">测试提醒</button>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <div class="settings-label">工作日</div>
+      <div class="settings-row" id="workDaysCheckboxes">
+        <label class="wday-label"><input type="checkbox" value="1"> 周一</label>
+        <label class="wday-label"><input type="checkbox" value="2"> 周二</label>
+        <label class="wday-label"><input type="checkbox" value="3"> 周三</label>
+        <label class="wday-label"><input type="checkbox" value="4"> 周四</label>
+        <label class="wday-label"><input type="checkbox" value="5"> 周五</label>
+        <label class="wday-label"><input type="checkbox" value="6"> 周六</label>
+        <label class="wday-label"><input type="checkbox" value="7"> 周日</label>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <div class="settings-label">等价物（单选切换，右侧为单价/元）</div>
+      <div class="equiv-list" id="equivList"></div>
+      <div class="add-equiv-row">
+        <input class="settings-input" id="inputEqName" placeholder="名称" style="flex:1">
+        <input class="settings-input" id="inputEqIcon" placeholder="图标" style="width:56px;flex:none">
+        <input class="settings-input" id="inputEqPrice" placeholder="单价" type="number" min="0" step="1" style="width:72px;flex:none">
+        <button class="btn-primary" id="btnAddEquiv">+</button>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <button class="btn-primary" id="btnSave" style="width:100%" onclick="window.__saveSettings()">保存设置</button>
     </div>
   </div>
 
-  <div class="settings-section">
-    <div class="settings-label">工作时间</div>
-    <div class="settings-row">
-      <input class="settings-input time-input" id="inputWorkStart" type="time">
-      <span style="color:#6b7280">至</span>
-      <input class="settings-input time-input" id="inputWorkEnd" type="time">
-    </div>
-  </div>
-
-  <div class="settings-section">
-    <div class="settings-label">休息时间（不计工时）</div>
-    <div class="break-list" id="breakList"></div>
-    <div class="settings-row" style="margin-top:8px">
-      <input class="settings-input time-input" id="inputBreakStart" type="time">
-      <span style="color:#6b7280">至</span>
-      <input class="settings-input time-input" id="inputBreakEnd" type="time">
-      <button class="btn-primary" id="btnAddBreak">+</button>
-    </div>
-  </div>
-
-  <div class="settings-section">
-    <div class="settings-label">下班提醒</div>
-    <div class="settings-row" style="align-items:center;gap:12px">
-      <label class="wday-label"><input type="checkbox" id="inputReminder"> 到点提醒下班</label>
-      <button class="btn-primary" id="btnTestReminder" style="margin-left:auto">测试提醒</button>
-    </div>
-  </div>
-
-  <div class="settings-section">
-    <div class="settings-label">工作日</div>
-    <div class="settings-row" id="workDaysCheckboxes">
-      <label class="wday-label"><input type="checkbox" value="1"> 周一</label>
-      <label class="wday-label"><input type="checkbox" value="2"> 周二</label>
-      <label class="wday-label"><input type="checkbox" value="3"> 周三</label>
-      <label class="wday-label"><input type="checkbox" value="4"> 周四</label>
-      <label class="wday-label"><input type="checkbox" value="5"> 周五</label>
-      <label class="wday-label"><input type="checkbox" value="6"> 周六</label>
-      <label class="wday-label"><input type="checkbox" value="7"> 周日</label>
-    </div>
-  </div>
-
-  <div class="settings-section">
-    <div class="settings-label">等价物（单选切换，右侧为单价/元）</div>
-    <div class="equiv-list" id="equivList"></div>
-    <div class="add-equiv-row">
-      <input class="settings-input" id="inputEqName" placeholder="名称" style="flex:1">
-      <input class="settings-input" id="inputEqIcon" placeholder="图标" style="width:56px;flex:none">
-      <input class="settings-input" id="inputEqPrice" placeholder="单价" type="number" min="0" step="1" style="width:72px;flex:none">
-      <button class="btn-primary" id="btnAddEquiv">+</button>
-    </div>
-  </div>
-
-  <div class="settings-section">
-    <button class="btn-primary" id="btnSave" style="width:100%" onclick="window.__saveSettings()">保存设置</button>
+  <div class="actions">
+    <button class="btn-hide" id="btnClose" title="关闭" onclick="window.close()">✕</button>
   </div>
 </div>
 

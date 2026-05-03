@@ -1,3 +1,24 @@
+@font-face {
+  font-family: 'Zpix';
+  src: url('../assets/zpix.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Zpix Mono';
+  src: url('../assets/zpix-mono.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Press Start 2P';
+  src: url('../assets/PressStart2P.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -14,21 +35,22 @@ html, body {
 }
 
 body {
-  font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+  font-family: 'Zpix', 'Microsoft YaHei', monospace;
   user-select: none;
+  -webkit-font-smoothing: none;
+  font-smooth: never;
 }
+
+/* === Main Panel === */
 
 #app {
   width: 320px;
   height: 220px;
-  background: linear-gradient(135deg, #0a0e1a 0%, #111827 50%, #0a0e1a 100%);
-  border: 1px solid rgba(34, 211, 238, 0.25);
-  border-radius: 16px;
+  background: #0f1a2e;
+  border: 2px solid #3a3a5c;
   position: relative;
   overflow: hidden;
-  box-shadow:
-    0 0 20px rgba(6, 182, 212, 0.10),
-    inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  box-shadow: inset 0 0 0 1px #5a5a8c;
 }
 
 #app::before {
@@ -41,9 +63,9 @@ body {
   background: repeating-linear-gradient(
     0deg,
     transparent,
-    transparent 2px,
-    rgba(6, 182, 212, 0.02) 2px,
-    rgba(6, 182, 212, 0.02) 4px
+    transparent 3px,
+    rgba(90, 90, 140, 0.03) 3px,
+    rgba(90, 90, 140, 0.03) 4px
   );
   pointer-events: none;
   animation: scanlines 8s linear infinite;
@@ -60,6 +82,8 @@ body {
   cursor: grab;
 }
 
+/* Status Row */
+
 .status-row {
   display: flex;
   align-items: center;
@@ -70,50 +94,52 @@ body {
 .status-dot {
   width: 8px;
   height: 8px;
-  border-radius: 50%;
-  background: #22d3ee;
-  box-shadow: 0 0 8px #22d3ee, 0 0 16px rgba(34, 211, 238, 0.5);
+  border-radius: 0;
+  background: #4ade80;
   animation: pulse 2s ease-in-out infinite;
 }
 
-.status-dot.working { background: #22d3ee; box-shadow: 0 0 8px #22d3ee, 0 0 16px rgba(34, 211, 238, 0.5); }
-.status-dot.before { background: #f59e0b; box-shadow: 0 0 8px #f59e0b, 0 0 16px rgba(245, 158, 11, 0.5); }
-.status-dot.after { background: #6b7280; box-shadow: 0 0 4px #6b7280; animation: none; }
-.status-dot.break { background: #a78bfa; box-shadow: 0 0 8px #a78bfa, 0 0 16px rgba(167, 139, 250, 0.5); }
+.status-dot.working { background: #4ade80; }
+.status-dot.before { background: #e6b800; }
+.status-dot.after { background: #8a8a9a; animation: none; }
+.status-dot.break { background: #a78bfa; }
 
 @keyframes pulse {
   0%, 100% { opacity: 1; }
-  50% { opacity: 0.4; }
+  50% { opacity: 0.3; }
 }
 
 .status-text {
-  color: #9ca3af;
+  color: #f5f0dc;
   font-size: 11px;
-  letter-spacing: 0.5px;
+  letter-spacing: 0;
 }
 
 .status-time {
-  color: #6b7280;
+  color: #8a8a9a;
   font-size: 11px;
   margin-left: auto;
 }
 
 .multiplier-tag {
   font-size: 10px;
-  font-weight: 600;
+  font-weight: normal;
   padding: 1px 6px;
-  border-radius: 4px;
+  border-radius: 0;
   cursor: pointer;
-  transition: all 0.2s;
   user-select: none;
+  border: 1px solid;
 }
-.multiplier-tag.x1 { background: rgba(107, 114, 128, 0.2); color: #9ca3af; }
-.multiplier-tag.x2 { background: rgba(34, 211, 238, 0.15); color: #22d3ee; }
-.multiplier-tag.x3 { background: rgba(251, 191, 36, 0.15); color: #fbbf24; }
+
+.multiplier-tag.x1 { background: #1a2540; color: #8a8a9a; border-color: #3a3a5c; }
+.multiplier-tag.x2 { background: #1a2540; color: #60a5fa; border-color: #3a5a8c; }
+.multiplier-tag.x3 { background: #1a2540; color: #e6b800; border-color: #8c7a3a; }
+
+/* Amount Section */
 
 .amount-section {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: center;
   gap: 8px;
   padding: 12px 20px 8px;
@@ -122,7 +148,7 @@ body {
 
 .amount-label {
   font-size: 13px;
-  color: #9ca3af;
+  color: #8a8a9a;
   width: 100%;
   text-align: center;
   margin-bottom: 2px;
@@ -139,22 +165,19 @@ body {
 }
 
 .amount-value {
-  font-size: 36px;
-  font-weight: 700;
-  color: #fbbf24;
+  font-size: 18px;
+  font-weight: normal;
+  color: #e6b800;
   font-variant-numeric: tabular-nums;
-  text-shadow:
-    0 0 20px rgba(251, 191, 36, 0.6),
-    0 0 40px rgba(251, 191, 36, 0.3),
-    0 2px 4px rgba(0, 0, 0, 0.5);
-  font-family: 'Consolas', 'Cascadia Code', 'Microsoft YaHei', monospace;
+  text-shadow: 2px 2px 0 #000;
+  font-family: 'Press Start 2P', 'Zpix Mono', monospace;
   transition: text-shadow 0.3s;
   line-height: 1.1;
 }
 
 .amount-unit {
   font-size: 15px;
-  color: #d1d5db;
+  color: #f5f0dc;
   align-self: flex-end;
   padding-bottom: 2px;
   display: flex;
@@ -175,44 +198,35 @@ body {
 
 .money-hint {
   text-align: center;
-  color: #6b7280;
+  color: #8a8a9a;
   font-size: 12px;
   padding: 2px 0 8px;
 }
+
+/* Progress Bar (RPG HP/EXP style) */
 
 .progress-section {
   padding: 0 20px;
 }
 
 .progress-bar {
-  height: 4px;
-  background: rgba(255, 255, 255, 0.08);
-  border-radius: 2px;
+  height: 10px;
+  background: #0a1020;
+  border: 1px solid #3a3a5c;
   overflow: hidden;
   position: relative;
 }
 
 .progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, #06b6d4, #22d3ee, #67e8f9);
-  border-radius: 2px;
+  background: #4ade80;
   position: relative;
-  transition: width 0.5s ease;
+  transition: width 0.5s steps(20);
+  box-shadow: inset 0 -2px 0 rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.2);
 }
 
 .progress-shine {
-  position: absolute;
-  top: 0;
-  left: -50%;
-  width: 50%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
-  animation: shine 2s ease-in-out infinite;
-}
-
-@keyframes shine {
-  0% { left: -50%; }
-  100% { left: 150%; }
+  display: none;
 }
 
 .progress-label {
@@ -220,8 +234,10 @@ body {
   justify-content: space-between;
   padding-top: 4px;
   font-size: 10px;
-  color: #6b7280;
+  color: #8a8a9a;
 }
+
+/* Actions */
 
 .actions {
   position: absolute;
@@ -233,27 +249,29 @@ body {
 
 .btn-settings,
 .btn-hide {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #9ca3af;
+  background: #1a2540;
+  border: 1px solid #3a3a5c;
+  color: #8a8a9a;
   width: 26px;
   height: 26px;
-  border-radius: 8px;
+  border-radius: 0;
   cursor: pointer;
   font-size: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s;
   -webkit-app-region: no-drag;
+  box-shadow: inset 0 0 0 1px #5a5a8c;
 }
 
 .btn-settings:hover,
 .btn-hide:hover {
-  background: rgba(34, 211, 238, 0.15);
-  border-color: rgba(34, 211, 238, 0.4);
-  color: #22d3ee;
+  background: #2a3550;
+  color: #e6b800;
+  border-color: #e6b800;
 }
+
+/* Canvas */
 
 #particleCanvas {
   position: absolute;
@@ -262,11 +280,19 @@ body {
   height: 100%;
   pointer-events: none;
   z-index: 1;
-  border-radius: 16px;
+  image-rendering: pixelated;
 }
 
 .paused * {
   animation-play-state: paused !important;
+}
+
+/* === Settings Window === */
+
+#settingsApp {
+  background: #0f1a2e;
+  border: 2px solid #3a3a5c;
+  box-shadow: inset 0 0 0 1px #5a5a8c;
 }
 
 /* === Stats Window === */
@@ -274,14 +300,11 @@ body {
 #statsApp {
   width: 500px;
   height: 580px;
-  background: linear-gradient(135deg, #0a0e1a 0%, #111827 50%, #0a0e1a 100%);
-  border: 1px solid rgba(34, 211, 238, 0.25);
-  border-radius: 16px;
+  background: #0f1a2e;
+  border: 2px solid #3a3a5c;
   position: relative;
   overflow: hidden;
-  box-shadow:
-    0 0 20px rgba(6, 182, 212, 0.10),
-    inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  box-shadow: inset 0 0 0 1px #5a5a8c;
 }
 
 #statsApp .drag-bar {
@@ -299,32 +322,32 @@ body {
 
 .month-title {
   font-size: 16px;
-  font-weight: 600;
-  color: #e5e7eb;
+  font-weight: normal;
+  color: #f5f0dc;
   min-width: 120px;
   text-align: center;
 }
 
 .nav-btn {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #9ca3af;
+  background: #1a2540;
+  border: 1px solid #3a3a5c;
+  color: #8a8a9a;
   width: 30px;
   height: 30px;
-  border-radius: 8px;
+  border-radius: 0;
   cursor: pointer;
   font-size: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s;
   -webkit-app-region: no-drag;
+  box-shadow: inset 0 0 0 1px #5a5a8c;
 }
 
 .nav-btn:hover {
-  background: rgba(34, 211, 238, 0.15);
-  border-color: rgba(34, 211, 238, 0.4);
-  color: #22d3ee;
+  background: #2a3550;
+  color: #e6b800;
+  border-color: #e6b800;
 }
 
 .calendar-weekdays {
@@ -337,7 +360,7 @@ body {
 .calendar-weekdays span {
   text-align: center;
   font-size: 11px;
-  color: #6b7280;
+  color: #8a8a9a;
   padding: 4px 0;
 }
 
@@ -350,29 +373,29 @@ body {
 
 .cal-cell {
   aspect-ratio: 1;
-  border-radius: 8px;
+  border-radius: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 1px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  transition: background 0.2s;
+  background: #0a1020;
+  border: 1px solid #2a2a4a;
   min-height: 54px;
 }
 
 .cal-cell:hover {
-  background: rgba(255, 255, 255, 0.06);
+  background: #1a2540;
 }
 
 .cal-cell.today {
-  border-color: rgba(34, 211, 238, 0.6);
-  box-shadow: 0 0 8px rgba(34, 211, 238, 0.2);
+  border-color: #e6b800;
+  box-shadow: inset 0 0 0 1px #e6b800;
 }
 
 .cal-cell.weekend {
-  background: rgba(255, 255, 255, 0.01);
+  background: #080e1a;
+  border-color: #1a1a30;
 }
 
 .cal-cell.no-record {
@@ -386,40 +409,36 @@ body {
 
 .cal-date {
   font-size: 11px;
-  color: #9ca3af;
+  color: #8a8a9a;
   line-height: 1;
 }
 
 .cal-cell.weekend .cal-date {
-  color: #4b5563;
+  color: #4a4a60;
 }
 
 .cal-cell.today .cal-date {
-  color: #22d3ee;
-  font-weight: 600;
+  color: #e6b800;
 }
 
 .cal-hours {
   font-size: 10px;
-  color: #22d3ee;
-  font-weight: 500;
+  color: #4ade80;
 }
 
 .cal-time {
   font-size: 9px;
-  color: #6b7280;
+  color: #6a6a80;
 }
 
 .cal-overtime {
   font-size: 10px;
-  font-weight: 500;
   color: #f87171;
 }
 
 .cal-undertime {
   font-size: 10px;
-  font-weight: 500;
-  color: #4ade80;
+  color: #60a5fa;
 }
 
 .cal-active {
@@ -430,9 +449,9 @@ body {
 .summary-card {
   margin: 12px 16px;
   padding: 12px 16px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
+  background: #0a1020;
+  border: 1px solid #3a3a5c;
+  box-shadow: inset 0 0 0 1px #2a2a4a;
 }
 
 .summary-row {
@@ -443,13 +462,12 @@ body {
 
 .summary-label {
   font-size: 12px;
-  color: #9ca3af;
+  color: #8a8a9a;
 }
 
 .summary-value {
   font-size: 12px;
-  color: #e5e7eb;
-  font-weight: 600;
+  color: #f5f0dc;
   font-variant-numeric: tabular-nums;
 }
 
@@ -459,13 +477,14 @@ body {
   right: 12px;
 }
 
+/* Clock Popup */
+
 .clock-popup {
-  background: #1e293b;
-  border: 1px solid rgba(34, 211, 238, 0.3);
-  border-radius: 10px;
+  background: #0f1a2e;
+  border: 2px solid #3a3a5c;
   padding: 10px 12px;
   z-index: 100;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+  box-shadow: inset 0 0 0 1px #5a5a8c, 4px 4px 0 #000;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -479,39 +498,38 @@ body {
 
 .clock-label {
   font-size: 12px;
-  color: #9ca3af;
+  color: #8a8a9a;
   width: 30px;
 }
 
 .clock-input {
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 6px;
-  color: #e5e7eb;
+  background: #0a1020;
+  border: 1px solid #3a3a5c;
+  border-radius: 0;
+  color: #f5f0dc;
   font-size: 13px;
   padding: 4px 8px;
-  font-family: 'Consolas', monospace;
+  font-family: 'Zpix', monospace;
   outline: none;
 }
 
 .clock-input:focus {
-  border-color: rgba(34, 211, 238, 0.5);
+  border-color: #e6b800;
 }
 
 .clock-btn {
-  background: rgba(34, 211, 238, 0.15);
-  border: 1px solid rgba(34, 211, 238, 0.3);
-  color: #22d3ee;
+  background: #1a2540;
+  border: 1px solid #3a3a5c;
+  color: #e6b800;
   font-size: 11px;
   padding: 4px 10px;
-  border-radius: 6px;
+  border-radius: 0;
   cursor: pointer;
-  transition: all 0.2s;
 }
 
 .clock-btn:hover {
-  background: rgba(34, 211, 238, 0.25);
-  border-color: rgba(34, 211, 238, 0.5);
+  background: #2a3550;
+  border-color: #e6b800;
 }
 
 .cal-cell[data-date] {
@@ -519,6 +537,6 @@ body {
 }
 
 .cal-cell[data-date]:hover {
-  background: rgba(34, 211, 238, 0.08);
-  border-color: rgba(34, 211, 238, 0.2);
+  background: #1a2540;
+  border-color: #5a5a8c;
 }
