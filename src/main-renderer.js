@@ -12,11 +12,15 @@ function secondsToHMS(totalSeconds) {
   return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
 }
 
-function isWorkday(date, workDays) {
-  // workDays: [1,2,3,4,5] = Mon-Fri
-  // JS: 0=Sun, 1=Mon, ... -> map: Mon=1 -> JS 1
+function isWorkday(date, workDays, holidays) {
+  const ds = `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
+  const year = ds.substring(0, 4);
+  const yearHolidays = holidays[year];
+  if (yearHolidays && yearHolidays[ds]) {
+    return yearHolidays[ds].type === 'workday';
+  }
   const jsDay = date.getDay();
-  const mapped = jsDay === 0 ? 7 : jsDay; // Sun=7, Mon=1, ..., Sat=6
+  const mapped = jsDay === 0 ? 7 : jsDay;
   return workDays.includes(mapped);
 }
 
@@ -64,7 +68,7 @@ function getTodayWorkSeconds(config) {
   const breakTotal = getBreakTotal(config, workStart, workEnd);
   const totalWork = workEnd - workStart - breakTotal;
 
-  if (!isWorkday(now, config.workDays)) {
+  if (!isWorkday(now, config.workDays, holidays)) {
     return { status: 'holiday', elapsed: 0, total: totalWork };
   }
 
@@ -107,6 +111,7 @@ function updateMultiplierDisplay() {
 // --- UI State ---
 
 let config = null;
+let holidays = {};
 let perSecondRate = 0;
 let currentAmount = 0;
 let equivalentIndex = 0;
@@ -274,6 +279,8 @@ async function init() {
   config = await window.electronAPI.loadConfig();
   if (!config) return;
 
+  holidays = await window.electronAPI.loadHolidays() || {};
+
   // Reset overtime multiplier to 1x on new day
   const today = getTodayStr();
   if (config.overtimeMultiplierDate !== today) {
@@ -329,6 +336,7 @@ async function reloadConfig() {
   const newConfig = await window.electronAPI.loadConfig();
   if (!newConfig) return;
   config = newConfig;
+  holidays = await window.electronAPI.loadHolidays() || {};
   perSecondRate = calcPerSecondRate(config);
   equivalentIndex = config.selectedEquivalent || 0;
   updateMultiplierDisplay();

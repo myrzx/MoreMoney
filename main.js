@@ -12,6 +12,7 @@ let reminderTimer = null;
 const configPath = path.join(app.getPath('userData'), 'config.json');
 const defaultConfigPath = path.join(__dirname, 'config.json');
 const recordsPath = path.join(app.getPath('userData'), 'records.json');
+const holidaysPath = path.join(__dirname, 'data', 'holidays.json');
 
 function loadConfig() {
   try {
@@ -150,6 +151,15 @@ function saveRecords(records) {
   fs.writeFileSync(recordsPath, JSON.stringify(records, null, 2));
 }
 
+function loadHolidays() {
+  try {
+    if (fs.existsSync(holidaysPath)) {
+      return JSON.parse(fs.readFileSync(holidaysPath, 'utf-8'));
+    }
+  } catch (e) { /* ignore */ }
+  return {};
+}
+
 function calcWorkHours(config) {
   const workStart = parseTime(config.workStart);
   const workEnd = parseTime(config.workEnd);
@@ -178,6 +188,11 @@ function autoRecord() {
 
   const records = loadRecords();
   const today = getTodayStr();
+  const holidays = loadHolidays();
+
+  // skip creating records for holidays
+  const now = new Date();
+  if (!isWorkday(now, config.workDays, holidays)) return;
 
   if (!records[today]) {
     records[today] = {
@@ -253,7 +268,17 @@ function parseTime(timeStr) {
   return h * 3600 + m * 60;
 }
 
-function isWorkday(date, workDays) {
+function formatDate(date) {
+  return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
+}
+
+function isWorkday(date, workDays, holidays) {
+  const ds = formatDate(date);
+  const year = ds.substring(0, 4);
+  const yearHolidays = holidays[year];
+  if (yearHolidays && yearHolidays[ds]) {
+    return yearHolidays[ds].type === 'workday';
+  }
   const jsDay = date.getDay();
   const mapped = jsDay === 0 ? 7 : jsDay;
   return workDays.includes(mapped);
@@ -289,11 +314,12 @@ function scheduleReminder() {
   const config = loadConfig();
   if (!config || !config.reminderEnabled) return;
 
+  const holidays = loadHolidays();
   const [endH, endM] = config.workEnd.split(':').map(Number);
   const now = new Date();
   let target = new Date(now.getFullYear(), now.getMonth(), now.getDate(), endH, endM, 0);
 
-  while (target <= now || !isWorkday(target, config.workDays)) {
+  while (target <= now || !isWorkday(target, config.workDays, holidays)) {
     target.setDate(target.getDate() + 1);
   }
 
@@ -306,6 +332,7 @@ function scheduleReminder() {
 
 // IPC handlers
 ipcMain.handle('load-config', () => loadConfig());
+ipcMain.handle('load-holidays', () => loadHolidays());
 ipcMain.handle('save-config', (_e, config) => { saveConfig(config); scheduleReminder(); return true; });
 ipcMain.handle('open-settings', () => { createSettingsWindow(); });
 ipcMain.handle('open-stats', () => { createStatsWindow(); });

@@ -18,7 +18,8 @@
       "preload.js",
       "config.json",
       "src/**/*",
-      "assets/**/*"
+      "assets/**/*",
+      "data/**/*"
     ],
     "win": {
       "target": "portable",

@@ -1,6 +1,7 @@
 let currentYear, currentMonth; // 0-indexed month
 let records = {};
 let config = null;
+let holidays = {};
 let activePopup = null;
 
 const elMonthTitle = document.getElementById('monthTitle');
@@ -24,6 +25,20 @@ function getNowTimeStr() {
   return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
 }
 
+function getHolidayInfo(ds) {
+  const year = ds.substring(0, 4);
+  const yearHolidays = holidays[year];
+  return yearHolidays ? yearHolidays[ds] : null;
+}
+
+function isEffectiveWorkday(ds, workDays) {
+  const info = getHolidayInfo(ds);
+  if (info) return info.type === 'workday';
+  const jsDay = new Date(ds).getDay();
+  const mapped = jsDay === 0 ? 7 : jsDay;
+  return workDays.includes(mapped);
+}
+
 function renderCalendar() {
   elMonthTitle.textContent = `${currentYear}年${currentMonth + 1}月`;
 
@@ -44,17 +59,22 @@ function renderCalendar() {
 
   for (let d = 1; d <= daysInMonth; d++) {
     const ds = dateStr(currentYear, currentMonth, d);
-    const jsDay = new Date(currentYear, currentMonth, d).getDay();
-    const mapped = jsDay === 0 ? 7 : jsDay;
-    const isWorkday = workDays.includes(mapped);
+    const holidayInfo = getHolidayInfo(ds);
+    const isWorkday = isEffectiveWorkday(ds, workDays);
     const isToday = ds === today;
     const rec = records[ds];
 
     let cls = 'cal-cell';
     if (isToday) cls += ' today';
-    if (!isWorkday) cls += ' weekend';
+    if (!isWorkday) {
+      cls += holidayInfo ? ' holiday' : ' weekend';
+    }
 
     let content = `<span class="cal-date">${d}</span>`;
+
+    if (holidayInfo && !isWorkday) {
+      content += `<span class="cal-holiday">${holidayInfo.name}</span>`;
+    }
 
     if (isWorkday && rec) {
       const wh = rec.workHours || 0;
@@ -221,6 +241,7 @@ function navigateMonth(delta) {
 async function init() {
   config = await window.electronAPI.loadConfig();
   records = await window.electronAPI.loadRecords();
+  holidays = await window.electronAPI.loadHolidays() || {};
 
   const now = new Date();
   currentYear = now.getFullYear();

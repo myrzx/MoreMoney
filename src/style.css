@@ -410,6 +410,21 @@ body {
   color: #4a4a60;
 }
 
+.cal-cell.holiday {
+  background: #1a0f0f;
+  border-color: #5c3a3a;
+}
+
+.cal-cell.holiday .cal-date {
+  color: #f87171;
+}
+
+.cal-holiday {
+  font-size: 9px;
+  color: #f87171;
+  line-height: 1;
+}
+
 .cal-cell.today .cal-date {
   color: #e6b800;
 }
