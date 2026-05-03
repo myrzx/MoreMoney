@@ -207,7 +207,6 @@ function autoRecord() {
   }
 
   // auto-fill clockOut for past days
-  const now = new Date();
   const currentSeconds = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
   const workEnd = parseTime(config.workEnd);
 
