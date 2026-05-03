@@ -66,14 +66,21 @@ function renderCalendar() {
 
     let cls = 'cal-cell';
     if (isToday) cls += ' today';
-    if (!isWorkday) {
-      cls += holidayInfo ? ' holiday' : ' weekend';
+
+    if (holidayInfo && holidayInfo.type === 'holiday') {
+      cls += ' holiday';
+    } else if (holidayInfo && holidayInfo.type === 'workday') {
+      cls += ' tiaoxiu';
+    } else if (!isWorkday) {
+      cls += ' weekend';
     }
 
     let content = `<span class="cal-date">${d}</span>`;
 
-    if (holidayInfo && !isWorkday) {
+    if (holidayInfo && holidayInfo.type === 'holiday') {
       content += `<span class="cal-holiday">${holidayInfo.name}</span>`;
+    } else if (holidayInfo && holidayInfo.type === 'workday') {
+      content += `<span class="cal-tiaoxiu">${holidayInfo.name}</span>`;
     }
 
     if (isWorkday && rec) {

@@ -387,7 +387,7 @@ body {
 }
 
 .cal-cell.weekend {
-  background: #080e1a;
+  background: #050a14;
   border-color: #1a1a30;
 }
 
@@ -422,6 +422,21 @@ body {
 .cal-holiday {
   font-size: 9px;
   color: #f87171;
+  line-height: 1;
+}
+
+.cal-cell.tiaoxiu {
+  background: #0f1a1a;
+  border-color: #3a5a5a;
+}
+
+.cal-cell.tiaoxiu .cal-date {
+  color: #60a5fa;
+}
+
+.cal-tiaoxiu {
+  font-size: 9px;
+  color: #60a5fa;
   line-height: 1;
 }
 
