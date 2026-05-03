@@ -243,9 +243,9 @@ function createStatsWindow() {
   const { width: sw, height: sh } = screen.getPrimaryDisplay().workAreaSize;
   statsWindow = new BrowserWindow({
     width: 520,
-    height: 600,
+    height: 640,
     x: Math.round((sw - 520) / 2),
-    y: Math.round((sh - 600) / 2),
+    y: Math.round((sh - 640) / 2),
     frame: false,
     transparent: true,
     resizable: true,

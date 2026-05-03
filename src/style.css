@@ -292,7 +292,7 @@ body {
 
 #statsApp {
   width: 500px;
-  height: 580px;
+  height: 620px;
   background: #0f1a2e;
   border: 2px solid #3a3a5c;
   position: relative;
@@ -387,7 +387,7 @@ body {
 }
 
 .cal-cell.weekend {
-  background: #050a14;
+  background: #000000;
   border-color: #1a1a30;
 }
 
