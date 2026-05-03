@@ -7,10 +7,7 @@ let activePopup = null;
 
 const elMonthTitle = document.getElementById('monthTitle');
 const elCalendarGrid = document.getElementById('calendarGrid');
-const elSumDays = document.getElementById('sumDays');
-const elSumHours = document.getElementById('sumHours');
-const elSumOvertime = document.getElementById('sumOvertime');
-const elSumAvgHours = document.getElementById('sumAvgHours');
+const elSummaryLine = document.getElementById('summaryLine');
 
 function getTodayStr() {
   const d = new Date();
@@ -136,10 +133,7 @@ function renderCalendar() {
 
   const avgHours = totalDays > 0 ? totalHours / totalDays : 0;
   const donated = totalHours - totalDays * 8;
-  elSumDays.textContent = `${totalDays} 天`;
-  elSumHours.textContent = `${totalHours.toFixed(1)} 小时`;
-  elSumOvertime.textContent = `${donated.toFixed(1)} 小时`;
-  elSumAvgHours.textContent = `${avgHours.toFixed(1)} 小时`;
+  elSummaryLine.innerHTML = `总工时 ${totalHours.toFixed(1)} h − 工作 ${totalDays} 天 × 8 h = 奉献 ${donated.toFixed(1)} h　日均 ${avgHours.toFixed(1)} h`;
 }
 
 function closePopup() {

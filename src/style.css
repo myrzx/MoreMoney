@@ -474,29 +474,15 @@ body {
   color: #a78bfa;
 }
 
-.summary-card {
-  margin: 12px 16px;
-  padding: 12px 16px;
-  background: #0a1020;
-  border: 1px solid #3a3a5c;
-  box-shadow: inset 0 0 0 1px #2a2a4a;
-}
-
-.summary-row {
-  display: flex;
-  justify-content: space-between;
-  padding: 4px 0;
-}
-
-.summary-label {
-  font-size: 12px;
+.summary-line {
+  text-align: center;
+  font-size: 15px;
   color: #8a8a9a;
-}
-
-.summary-value {
-  font-size: 12px;
-  color: #f5f0dc;
-  font-variant-numeric: tabular-nums;
+  padding: 8px 12px 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.4;
 }
 
 #calendarApp .actions {
