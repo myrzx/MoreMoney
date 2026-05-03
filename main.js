@@ -144,17 +144,25 @@ function isWorkday(date, workDays) {
 function showNotification() {
   const config = loadConfig();
   if (!config) return;
+
   const eq = config.equivalents[config.selectedEquivalent || 0];
+  const [startH, startM] = config.workStart.split(':').map(Number);
+  const [endH, endM] = config.workEnd.split(':').map(Number);
+  const workSeconds = (endH * 3600 + endM * 60) - (startH * 3600 + startM * 60);
+  const perSecond = config.monthlySalary / 21.75 / 8 / 3600;
+  const earned = perSecond * workSeconds;
+  const count = (earned / eq.price).toFixed(2);
+
   new Notification({
     title: '下班啦！',
-    body: `到点了，该收工了 🏁 今天已赚 ${eq.icon} ${eq.name}`
+    body: `今天已赚 ${count} ${eq.icon} ${eq.name}，该收工了 🏁`
   }).show();
 }
 
 function scheduleReminder() {
   if (reminderTimer) clearTimeout(reminderTimer);
   const config = loadConfig();
-  if (!config) return;
+  if (!config || !config.reminderEnabled) return;
 
   const [endH, endM] = config.workEnd.split(':').map(Number);
   const now = new Date();
@@ -176,6 +184,7 @@ ipcMain.handle('load-config', () => loadConfig());
 ipcMain.handle('save-config', (_e, config) => { saveConfig(config); scheduleReminder(); return true; });
 ipcMain.handle('open-settings', () => { createSettingsWindow(); });
 ipcMain.handle('hide-window', () => { mainWindow.hide(); });
+ipcMain.handle('test-reminder', () => { showNotification(); return true; });
 
 app.whenReady().then(() => {
   createMainWindow();

@@ -3,6 +3,7 @@
   "workStart": "09:00",
   "workEnd": "17:30",
   "workDays": [1, 2, 3, 4, 5],
+  "reminderEnabled": true,
   "equivalents": [
     { "name": "奶茶", "icon": "🧋", "price": 20 },
     { "name": "手办", "icon": "👾", "price": 1000 },

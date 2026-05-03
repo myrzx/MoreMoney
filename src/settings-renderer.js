@@ -11,6 +11,8 @@ const elInputEqPrice = document.getElementById('inputEqPrice');
 const elBtnAddEquiv = document.getElementById('btnAddEquiv');
 const elBtnSave = document.getElementById('btnSave');
 const elBtnClose = document.getElementById('btnClose');
+const elInputReminder = document.getElementById('inputReminder');
+const elBtnTestReminder = document.getElementById('btnTestReminder');
 
 async function loadConfig() {
   try {
@@ -27,6 +29,8 @@ async function loadConfig() {
     checkboxes.forEach(cb => {
       cb.checked = workDays.includes(Number(cb.value));
     });
+
+    elInputReminder.checked = config.reminderEnabled !== false;
 
     renderEquivalents();
   } catch (e) {
@@ -104,6 +108,7 @@ elBtnAddEquiv.addEventListener('click', () => {
 
 elBtnSave.addEventListener('click', () => { doSave(); });
 elBtnClose.addEventListener('click', () => { window.close(); });
+elBtnTestReminder.addEventListener('click', () => { window.electronAPI.testReminder(); });
 
 async function doSave() {
   try {
@@ -116,6 +121,8 @@ async function doSave() {
       .filter(cb => cb.checked)
       .map(cb => Number(cb.value))
       .sort();
+
+    config.reminderEnabled = elInputReminder.checked;
 
     await window.electronAPI.saveConfig(config);
     window.close();
