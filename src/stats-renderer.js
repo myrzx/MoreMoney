@@ -6,8 +6,8 @@ const elMonthTitle = document.getElementById('monthTitle');
 const elCalendarGrid = document.getElementById('calendarGrid');
 const elSumDays = document.getElementById('sumDays');
 const elSumHours = document.getElementById('sumHours');
-const elSumEarned = document.getElementById('sumEarned');
-const elSumAvg = document.getElementById('sumAvg');
+const elSumOvertime = document.getElementById('sumOvertime');
+const elSumAvgHours = document.getElementById('sumAvgHours');
 
 function getTodayStr() {
   const d = new Date();
@@ -34,7 +34,7 @@ function renderCalendar() {
   const workDays = config ? config.workDays : [1, 2, 3, 4, 5];
 
   let html = '';
-  let totalDays = 0, totalHours = 0, totalEarned = 0;
+  let totalDays = 0, totalHours = 0;
 
   // fill blanks before first day
   for (let i = 0; i < startDay; i++) {
@@ -57,14 +57,15 @@ function renderCalendar() {
 
     if (isWorkday && rec) {
       const wh = rec.workHours || 0;
-      const earned = rec.earned || 0;
       if (wh > 0) {
-        content += `<span class="cal-hours">${wh.toFixed(1)}h</span>`;
-        content += `<span class="cal-earned">￥${earned.toFixed(0)}</span>`;
+        const timeStr = `${rec.clockIn || ''}-${rec.clockOut || ''}`;
+        content += `<span class="cal-time">${timeStr}</span>`;
+        const hoursClass = wh > 8 ? 'cal-overtime' : (wh < 8 ? 'cal-undertime' : 'cal-hours');
+        content += `<span class="${hoursClass}">${wh.toFixed(1)}h</span>`;
         totalDays++;
         totalHours += wh;
-        totalEarned += earned;
       } else if (rec.clockIn && !rec.clockOut) {
+        content += `<span class="cal-time">${rec.clockIn}-</span>`;
         content += '<span class="cal-active">进行中</span>';
       }
     } else if (isWorkday && !rec) {
@@ -79,11 +80,12 @@ function renderCalendar() {
 
   elCalendarGrid.innerHTML = html;
 
-  const avg = totalDays > 0 ? totalEarned / totalDays : 0;
+  const avgHours = totalDays > 0 ? totalHours / totalDays : 0;
+  const donated = totalHours - totalDays * 8;
   elSumDays.textContent = `${totalDays} 天`;
   elSumHours.textContent = `${totalHours.toFixed(1)} 小时`;
-  elSumEarned.textContent = `￥${totalEarned.toFixed(0)}`;
-  elSumAvg.textContent = `￥${avg.toFixed(0)}`;
+  elSumOvertime.textContent = `${donated.toFixed(1)} 小时`;
+  elSumAvgHours.textContent = `${avgHours.toFixed(1)} 小时`;
 }
 
 function navigateMonth(delta) {

@@ -405,9 +405,21 @@ body {
   font-weight: 500;
 }
 
-.cal-earned {
+.cal-time {
   font-size: 9px;
-  color: #fbbf24;
+  color: #6b7280;
+}
+
+.cal-overtime {
+  font-size: 10px;
+  font-weight: 500;
+  color: #f87171;
+}
+
+.cal-undertime {
+  font-size: 10px;
+  font-weight: 500;
+  color: #4ade80;
 }
 
 .cal-active {
