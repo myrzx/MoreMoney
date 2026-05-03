@@ -119,6 +119,7 @@ body {
   color: #8a8a9a;
   font-size: 11px;
   margin-left: auto;
+  font-family: 'Press Start 2P', monospace;
 }
 
 .multiplier-tag {
@@ -129,6 +130,7 @@ body {
   cursor: pointer;
   user-select: none;
   border: 1px solid;
+  font-family: 'Press Start 2P', monospace;
 }
 
 .multiplier-tag.x1 { background: #1a2540; color: #8a8a9a; border-color: #3a3a5c; }
@@ -235,6 +237,7 @@ body {
   padding-top: 4px;
   font-size: 10px;
   color: #8a8a9a;
+  font-family: 'Press Start 2P', monospace;
 }
 
 /* Actions */
@@ -411,6 +414,7 @@ body {
   font-size: 11px;
   color: #8a8a9a;
   line-height: 1;
+  font-family: 'Press Start 2P', monospace;
 }
 
 .cal-cell.weekend .cal-date {
@@ -424,21 +428,25 @@ body {
 .cal-hours {
   font-size: 10px;
   color: #4ade80;
+  font-family: 'Press Start 2P', monospace;
 }
 
 .cal-time {
   font-size: 9px;
   color: #6a6a80;
+  font-family: 'Press Start 2P', monospace;
 }
 
 .cal-overtime {
   font-size: 10px;
   color: #f87171;
+  font-family: 'Press Start 2P', monospace;
 }
 
 .cal-undertime {
   font-size: 10px;
   color: #60a5fa;
+  font-family: 'Press Start 2P', monospace;
 }
 
 .cal-active {
@@ -469,6 +477,7 @@ body {
   font-size: 12px;
   color: #f5f0dc;
   font-variant-numeric: tabular-nums;
+  font-family: 'Press Start 2P', monospace;
 }
 
 #statsApp .actions {
@@ -509,7 +518,7 @@ body {
   color: #f5f0dc;
   font-size: 13px;
   padding: 4px 8px;
-  font-family: 'Zpix', monospace;
+  font-family: 'Press Start 2P', 'Zpix', monospace;
   outline: none;
 }
 
