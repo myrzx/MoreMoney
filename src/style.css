@@ -387,7 +387,7 @@ body {
 }
 
 .cal-cell.weekend {
-  background: #000000;
+  background: #000000 !important;
   border-color: #1a1a30;
 }
 
@@ -411,7 +411,7 @@ body {
 }
 
 .cal-cell.holiday {
-  background: #1a0f0f;
+  background: #1a0f0f !important;
   border-color: #5c3a3a;
 }
 
