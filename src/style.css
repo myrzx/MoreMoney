@@ -5,6 +5,13 @@
   font-style: normal;
 }
 
+@font-face {
+  font-family: 'Zpix Mono';
+  src: url('../assets/zpix-mono.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -156,7 +163,7 @@ body {
   color: #e6b800;
   font-variant-numeric: tabular-nums;
   text-shadow: 2px 2px 0 #000;
-  font-family: 'Zpix', monospace;
+  font-family: 'Consolas', 'Cascadia Code', 'Courier New', monospace;
   transition: text-shadow 0.3s;
   line-height: 1.1;
 }
