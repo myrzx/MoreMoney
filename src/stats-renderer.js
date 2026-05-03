@@ -1,6 +1,7 @@
 let currentYear, currentMonth; // 0-indexed month
 let records = {};
 let config = null;
+let activePopup = null;
 
 const elMonthTitle = document.getElementById('monthTitle');
 const elCalendarGrid = document.getElementById('calendarGrid');
@@ -18,25 +19,25 @@ function dateStr(y, m, d) {
   return `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
 }
 
+function getNowTimeStr() {
+  const d = new Date();
+  return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+}
+
 function renderCalendar() {
   elMonthTitle.textContent = `${currentYear}年${currentMonth + 1}月`;
 
   const firstDay = new Date(currentYear, currentMonth, 1);
-  // JS getDay(): 0=Sun, 1=Mon, ... 6=Sat
-  // We want Mon=0, Tue=1, ... Sun=6
   let startDay = firstDay.getDay() - 1;
   if (startDay < 0) startDay = 6;
 
   const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
   const today = getTodayStr();
-
-  // config workDays: 1=Mon, ..., 7=Sun
   const workDays = config ? config.workDays : [1, 2, 3, 4, 5];
 
   let html = '';
   let totalDays = 0, totalHours = 0;
 
-  // fill blanks before first day
   for (let i = 0; i < startDay; i++) {
     html += '<div class="cal-cell empty"></div>';
   }
@@ -69,16 +70,27 @@ function renderCalendar() {
         content += '<span class="cal-active">进行中</span>';
       }
     } else if (isWorkday && !rec) {
-      // future workday or no record
       if (ds < today) {
         cls += ' no-record';
       }
     }
 
-    html += `<div class="${cls}">${content}</div>`;
+    if (isWorkday) {
+      html += `<div class="${cls}" data-date="${ds}">${content}</div>`;
+    } else {
+      html += `<div class="${cls}">${content}</div>`;
+    }
   }
 
   elCalendarGrid.innerHTML = html;
+
+  // bind click events on workday cells
+  elCalendarGrid.querySelectorAll('.cal-cell[data-date]').forEach(cell => {
+    cell.addEventListener('click', (e) => {
+      e.stopPropagation();
+      showClockPopup(cell.dataset.date, cell);
+    });
+  });
 
   const avgHours = totalDays > 0 ? totalHours / totalDays : 0;
   const donated = totalHours - totalDays * 8;
@@ -88,10 +100,121 @@ function renderCalendar() {
   elSumAvgHours.textContent = `${avgHours.toFixed(1)} 小时`;
 }
 
+function closePopup() {
+  if (activePopup) {
+    activePopup.remove();
+    activePopup = null;
+  }
+}
+
+function showClockPopup(ds, cellEl) {
+  closePopup();
+
+  const rec = records[ds] || {};
+  const nowTime = getNowTimeStr();
+
+  const popup = document.createElement('div');
+  popup.className = 'clock-popup';
+  popup.innerHTML = `
+    <div class="clock-row">
+      <span class="clock-label">上班</span>
+      <input type="time" class="clock-input" id="popupClockIn" value="${rec.clockIn || nowTime}">
+      <button class="clock-btn" data-field="clockIn">保存</button>
+    </div>
+    <div class="clock-row">
+      <span class="clock-label">下班</span>
+      <input type="time" class="clock-input" id="popupClockOut" value="${rec.clockOut || nowTime}">
+      <button class="clock-btn" data-field="clockOut">保存</button>
+    </div>
+  `;
+
+  // position popup near the cell
+  const gridRect = elCalendarGrid.getBoundingClientRect();
+  const cellRect = cellEl.getBoundingClientRect();
+  popup.style.position = 'fixed';
+  popup.style.left = `${cellRect.left}px`;
+  popup.style.top = `${cellRect.bottom + 4}px`;
+
+  document.body.appendChild(popup);
+  activePopup = popup;
+
+  // adjust if popup goes off screen
+  requestAnimationFrame(() => {
+    const pr = popup.getBoundingClientRect();
+    if (pr.right > window.innerWidth) {
+      popup.style.left = `${window.innerWidth - pr.width - 8}px`;
+    }
+    if (pr.bottom > window.innerHeight) {
+      popup.style.top = `${cellRect.top - pr.height - 4}px`;
+    }
+  });
+
+  // save buttons
+  popup.querySelectorAll('.clock-btn').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      const field = btn.dataset.field;
+      const input = popup.querySelector(field === 'clockIn' ? '#popupClockIn' : '#popupClockOut');
+      const timeVal = input.value;
+      if (!timeVal) return;
+
+      const existing = records[ds] || {};
+      const updated = {
+        clockIn: existing.clockIn || null,
+        clockOut: existing.clockOut || null,
+        multiplier: existing.multiplier || (config ? config.overtimeMultiplier : 1),
+        breaks: existing.breaks || (config ? config.breaks : []),
+        workHours: 0,
+        earned: 0,
+        ...existing
+      };
+      updated[field] = timeVal;
+
+      // recalculate workHours
+      if (updated.clockIn && updated.clockOut) {
+        const [inH, inM] = updated.clockIn.split(':').map(Number);
+        const [outH, outM] = updated.clockOut.split(':').map(Number);
+        const inSec = inH * 3600 + inM * 60;
+        const outSec = outH * 3600 + outM * 60;
+        const breaks = updated.breaks || [];
+        const breakTotal = breaks.reduce((sum, b) => {
+          const bStart = Math.max(parseTime(b.start), inSec);
+          const bEnd = Math.min(parseTime(b.end), outSec);
+          return sum + Math.max(0, bEnd - bStart);
+        }, 0);
+        updated.workHours = Math.max(0, (outSec - inSec - breakTotal) / 3600);
+      }
+
+      await window.electronAPI.saveRecord(ds, updated);
+      records[ds] = updated;
+      closePopup();
+      renderCalendar();
+    });
+  });
+
+  // close on outside click
+  setTimeout(() => {
+    document.addEventListener('click', onDocClick);
+  }, 0);
+}
+
+function onDocClick(e) {
+  if (activePopup && !activePopup.contains(e.target)) {
+    closePopup();
+    document.removeEventListener('click', onDocClick);
+  }
+}
+
+function parseTime(timeStr) {
+  const [h, m] = timeStr.split(':').map(Number);
+  return h * 3600 + m * 60;
+}
+
 function navigateMonth(delta) {
   currentMonth += delta;
   if (currentMonth < 0) { currentMonth = 11; currentYear--; }
   if (currentMonth > 11) { currentMonth = 0; currentYear++; }
+  closePopup();
   renderCalendar();
 }
 

@@ -458,3 +458,67 @@ body {
   bottom: 8px;
   right: 12px;
 }
+
+.clock-popup {
+  background: #1e293b;
+  border: 1px solid rgba(34, 211, 238, 0.3);
+  border-radius: 10px;
+  padding: 10px 12px;
+  z-index: 100;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.clock-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.clock-label {
+  font-size: 12px;
+  color: #9ca3af;
+  width: 30px;
+}
+
+.clock-input {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+  color: #e5e7eb;
+  font-size: 13px;
+  padding: 4px 8px;
+  font-family: 'Consolas', monospace;
+  outline: none;
+}
+
+.clock-input:focus {
+  border-color: rgba(34, 211, 238, 0.5);
+}
+
+.clock-btn {
+  background: rgba(34, 211, 238, 0.15);
+  border: 1px solid rgba(34, 211, 238, 0.3);
+  color: #22d3ee;
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.clock-btn:hover {
+  background: rgba(34, 211, 238, 0.25);
+  border-color: rgba(34, 211, 238, 0.5);
+}
+
+.cal-cell[data-date] {
+  cursor: pointer;
+}
+
+.cal-cell[data-date]:hover {
+  background: rgba(34, 211, 238, 0.08);
+  border-color: rgba(34, 211, 238, 0.2);
+}
