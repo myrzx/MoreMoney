@@ -12,6 +12,13 @@
   font-style: normal;
 }
 
+@font-face {
+  font-family: 'Press Start 2P';
+  src: url('../assets/PressStart2P.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -163,7 +170,7 @@ body {
   color: #e6b800;
   font-variant-numeric: tabular-nums;
   text-shadow: 2px 2px 0 #000;
-  font-family: 'Consolas', 'Cascadia Code', 'Courier New', monospace;
+  font-family: 'Press Start 2P', 'Zpix Mono', monospace;
   transition: text-shadow 0.3s;
   line-height: 1.1;
 }
