@@ -373,7 +373,8 @@ body {
   justify-content: center;
   gap: 1px;
   background: #0a1020;
-  border: 1px solid #2a2a4a;
+  border: 1px solid #3a3a5c;
+  box-shadow: inset 0 0 0 1px #5a5a8c;
   min-height: 54px;
 }
 
@@ -387,8 +388,9 @@ body {
 }
 
 .cal-cell.weekend {
-  background: #1a1a10 !important;
-  border-color: #3a3a20;
+  background: #0a1a10 !important;
+  border-color: #2a5a3a;
+  box-shadow: inset 0 0 0 1px #3a7a5a;
 }
 
 .cal-cell.no-record {
@@ -398,6 +400,7 @@ body {
 .cal-cell.empty {
   background: transparent;
   border-color: transparent;
+  box-shadow: none;
 }
 
 .cal-date {
@@ -407,36 +410,38 @@ body {
 }
 
 .cal-cell.weekend .cal-date {
-  color: #a89060;
+  color: #4ade80;
 }
 
 .cal-cell.holiday {
-  background: #1a0f0f !important;
-  border-color: #5c3a3a;
+  background: #1a1a08 !important;
+  border-color: #8a7a2a;
+  box-shadow: inset 0 0 0 1px #aa9a3a;
 }
 
 .cal-cell.holiday .cal-date {
-  color: #f87171;
+  color: #e6b800;
 }
 
 .cal-holiday {
   font-size: 9px;
-  color: #f87171;
+  color: #e6b800;
   line-height: 1;
 }
 
 .cal-cell.tiaoxiu {
-  background: #0f1a1a;
-  border-color: #3a5a5a;
+  background: #140a1e !important;
+  border-color: #4a2a6a;
+  box-shadow: inset 0 0 0 1px #6a3a8a;
 }
 
 .cal-cell.tiaoxiu .cal-date {
-  color: #60a5fa;
+  color: #a78bfa;
 }
 
 .cal-tiaoxiu {
   font-size: 9px;
-  color: #60a5fa;
+  color: #a78bfa;
   line-height: 1;
 }
 
@@ -567,12 +572,12 @@ body {
 /* Override indicators */
 
 .cal-cell.override-work {
-  border-color: #4ade80;
+  border-color: #5a5a8c;
 }
 
 .cal-cell.override-rest {
-  background: #1a1a10 !important;
-  border-color: #a89060;
+  background: #0a1a10 !important;
+  border-color: #2a5a3a;
 }
 
 .cal-cell.override-work .cal-date,
