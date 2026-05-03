@@ -4,12 +4,14 @@ const fs = require('fs');
 
 let mainWindow = null;
 let settingsWindow = null;
+let statsWindow = null;
 let tray = null;
 let isQuitting = false;
 let reminderTimer = null;
 
 const configPath = path.join(app.getPath('userData'), 'config.json');
 const defaultConfigPath = path.join(__dirname, 'config.json');
+const recordsPath = path.join(app.getPath('userData'), 'records.json');
 
 function loadConfig() {
   try {
@@ -133,6 +135,117 @@ function createTray() {
   });
 }
 
+// --- Records ---
+
+function loadRecords() {
+  try {
+    if (fs.existsSync(recordsPath)) {
+      return JSON.parse(fs.readFileSync(recordsPath, 'utf-8'));
+    }
+  } catch (e) { /* ignore */ }
+  return {};
+}
+
+function saveRecords(records) {
+  fs.writeFileSync(recordsPath, JSON.stringify(records, null, 2));
+}
+
+function calcWorkHours(config) {
+  const workStart = parseTime(config.workStart);
+  const workEnd = parseTime(config.workEnd);
+  const breaks = config.breaks || [];
+  const breakTotal = breaks.reduce((sum, b) => {
+    const bStart = Math.max(parseTime(b.start), workStart);
+    const bEnd = Math.min(parseTime(b.end), workEnd);
+    return sum + Math.max(0, bEnd - bStart);
+  }, 0);
+  return (workEnd - workStart - breakTotal) / 3600;
+}
+
+function calcEarned(config, workHours, multiplier) {
+  const perHour = config.monthlySalary / 21.75 / 8;
+  return perHour * workHours * (multiplier || 1);
+}
+
+function getTodayStr() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function autoRecord() {
+  const config = loadConfig();
+  if (!config) return;
+
+  const records = loadRecords();
+  const today = getTodayStr();
+
+  if (!records[today]) {
+    records[today] = {
+      clockIn: config.workStart,
+      clockOut: null,
+      multiplier: config.overtimeMultiplier || 1,
+      breaks: config.breaks || [],
+      workHours: 0,
+      earned: 0
+    };
+    saveRecords(records);
+  }
+
+  // auto-fill clockOut for past days
+  const now = new Date();
+  const currentSeconds = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
+  const workEnd = parseTime(config.workEnd);
+
+  for (const dateStr of Object.keys(records)) {
+    const rec = records[dateStr];
+    if (dateStr < today && rec.clockOut === null) {
+      rec.clockOut = config.workEnd;
+      const wh = calcWorkHours(config);
+      rec.workHours = wh;
+      rec.earned = calcEarned(config, wh, rec.multiplier);
+    }
+  }
+
+  // update today's record if past workEnd
+  const todayRec = records[today];
+  if (todayRec && todayRec.clockOut === null && currentSeconds >= workEnd) {
+    todayRec.clockOut = config.workEnd;
+    const wh = calcWorkHours(config);
+    todayRec.workHours = wh;
+    todayRec.earned = calcEarned(config, wh, todayRec.multiplier);
+  }
+
+  saveRecords(records);
+}
+
+// --- Stats Window ---
+
+function createStatsWindow() {
+  if (statsWindow) {
+    statsWindow.focus();
+    return;
+  }
+
+  const { width: sw, height: sh } = screen.getPrimaryDisplay().workAreaSize;
+  statsWindow = new BrowserWindow({
+    width: 520,
+    height: 600,
+    x: Math.round((sw - 520) / 2),
+    y: Math.round((sh - 600) / 2),
+    frame: false,
+    transparent: true,
+    resizable: true,
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
+      contextIsolation: true,
+      nodeIntegration: false
+    }
+  });
+
+  statsWindow.loadFile(path.join(__dirname, 'src', 'stats.html'));
+  statsWindow.on('closed', () => { statsWindow = null; });
+}
+
 // --- Clock-out Reminder ---
 
 function parseTime(timeStr) {
@@ -195,12 +308,22 @@ function scheduleReminder() {
 ipcMain.handle('load-config', () => loadConfig());
 ipcMain.handle('save-config', (_e, config) => { saveConfig(config); scheduleReminder(); return true; });
 ipcMain.handle('open-settings', () => { createSettingsWindow(); });
+ipcMain.handle('open-stats', () => { createStatsWindow(); });
 ipcMain.handle('hide-window', () => { mainWindow.hide(); });
 ipcMain.handle('test-reminder', () => { showNotification(); return true; });
+ipcMain.handle('load-records', () => loadRecords());
+ipcMain.handle('save-record', (_e, date, record) => {
+  const records = loadRecords();
+  records[date] = record;
+  saveRecords(records);
+  return true;
+});
 
 app.whenReady().then(() => {
   createMainWindow();
   createTray();
+  autoRecord();
+  setInterval(autoRecord, 60000); // update today's record every minute
   scheduleReminder();
 });
 
