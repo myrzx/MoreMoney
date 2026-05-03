@@ -6,18 +6,23 @@
 <link rel="stylesheet" href="style.css">
 <style>
   body { display: flex; justify-content: center; align-items: center; height: 100vh; background: transparent; font-family: 'Zpix', monospace; -webkit-font-smoothing: none; }
-  #settings-app {
-    width: 480px;
-    max-height: 540px;
-    overflow-y: auto;
+  #settingsApp {
+    width: 500px;
+    height: 560px;
     background: #0f1a2e;
     border: 2px solid #3a3a5c;
-    padding: 28px 24px 20px;
     box-shadow: inset 0 0 0 1px #5a5a8c;
-    color: #f5f0dc;
     position: relative;
+    overflow: hidden;
+    color: #f5f0dc;
   }
-  .settings-drag { height: 32px; -webkit-app-region: drag; cursor: grab; position: absolute; top: 0; left: 0; right: 0; z-index: 1; }
+  #settings-app {
+    width: 100%;
+    height: 100%;
+    overflow-y: auto;
+    padding: 32px 24px 40px;
+  }
+  .settings-drag { height: 28px; -webkit-app-region: drag; cursor: grab; position: absolute; top: 0; left: 0; right: 0; z-index: 1; }
   .settings-section { margin-bottom: 18px; }
   .settings-label { font-size: 11px; color: #8a8a9a; text-transform: uppercase; letter-spacing: 0; margin-bottom: 6px; }
   .settings-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
@@ -100,12 +105,11 @@
     border-bottom: 1px solid #1a1a30;
   }
   .break-item .break-time { flex: 1; color: #a78bfa; }
-  .close-btn {
-    position: absolute; bottom: 8px; right: 12px;
-    background: none; border: none; color: #8a8a9a; font-size: 20px; cursor: pointer;
-    z-index: 10; -webkit-app-region: no-drag;
+  #settingsApp .actions {
+    position: absolute;
+    bottom: 8px;
+    right: 12px;
   }
-  .close-btn:hover { color: #e6b800; }
 
   .wday-label { display: flex; align-items: center; gap: 4px; font-size: 12px; color: #8a8a9a; cursor: pointer; padding: 2px 4px; -webkit-app-region: no-drag; }
   .wday-label input[type="checkbox"] { accent-color: #e6b800; }
@@ -119,72 +123,77 @@
 <title>MoreMoney 设置</title>
 </head>
 <body>
-<div id="settings-app">
+<div id="settingsApp">
   <div class="settings-drag"></div>
-  <button class="close-btn" id="btnClose" onclick="window.close()">✕</button>
 
-  <div class="settings-section">
-    <div class="settings-label">每月大米（￥）</div>
-    <div class="settings-row">
-      <input class="settings-input" id="inputSalary" type="password" step="100" min="0" style="flex:1">
-      <button class="eye-btn" id="btnEye" type="button">👁</button>
+  <div id="settings-app">
+    <div class="settings-section">
+      <div class="settings-label">每月大米（￥）</div>
+      <div class="settings-row">
+        <input class="settings-input" id="inputSalary" type="password" step="100" min="0" style="flex:1">
+        <button class="eye-btn" id="btnEye" type="button">👁</button>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <div class="settings-label">工作时间</div>
+      <div class="settings-row">
+        <input class="settings-input time-input" id="inputWorkStart" type="time">
+        <span style="color:#6b7280">至</span>
+        <input class="settings-input time-input" id="inputWorkEnd" type="time">
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <div class="settings-label">休息时间（不计工时）</div>
+      <div class="break-list" id="breakList"></div>
+      <div class="settings-row" style="margin-top:8px">
+        <input class="settings-input time-input" id="inputBreakStart" type="time">
+        <span style="color:#6b7280">至</span>
+        <input class="settings-input time-input" id="inputBreakEnd" type="time">
+        <button class="btn-primary" id="btnAddBreak">+</button>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <div class="settings-label">下班提醒</div>
+      <div class="settings-row" style="align-items:center;gap:12px">
+        <label class="wday-label"><input type="checkbox" id="inputReminder"> 到点提醒下班</label>
+        <button class="btn-primary" id="btnTestReminder" style="margin-left:auto">测试提醒</button>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <div class="settings-label">工作日</div>
+      <div class="settings-row" id="workDaysCheckboxes">
+        <label class="wday-label"><input type="checkbox" value="1"> 周一</label>
+        <label class="wday-label"><input type="checkbox" value="2"> 周二</label>
+        <label class="wday-label"><input type="checkbox" value="3"> 周三</label>
+        <label class="wday-label"><input type="checkbox" value="4"> 周四</label>
+        <label class="wday-label"><input type="checkbox" value="5"> 周五</label>
+        <label class="wday-label"><input type="checkbox" value="6"> 周六</label>
+        <label class="wday-label"><input type="checkbox" value="7"> 周日</label>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <div class="settings-label">等价物（单选切换，右侧为单价/元）</div>
+      <div class="equiv-list" id="equivList"></div>
+      <div class="add-equiv-row">
+        <input class="settings-input" id="inputEqName" placeholder="名称" style="flex:1">
+        <input class="settings-input" id="inputEqIcon" placeholder="图标" style="width:56px;flex:none">
+        <input class="settings-input" id="inputEqPrice" placeholder="单价" type="number" min="0" step="1" style="width:72px;flex:none">
+        <button class="btn-primary" id="btnAddEquiv">+</button>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <button class="btn-primary" id="btnSave" style="width:100%" onclick="window.__saveSettings()">保存设置</button>
     </div>
   </div>
 
-  <div class="settings-section">
-    <div class="settings-label">工作时间</div>
-    <div class="settings-row">
-      <input class="settings-input time-input" id="inputWorkStart" type="time">
-      <span style="color:#6b7280">至</span>
-      <input class="settings-input time-input" id="inputWorkEnd" type="time">
-    </div>
-  </div>
-
-  <div class="settings-section">
-    <div class="settings-label">休息时间（不计工时）</div>
-    <div class="break-list" id="breakList"></div>
-    <div class="settings-row" style="margin-top:8px">
-      <input class="settings-input time-input" id="inputBreakStart" type="time">
-      <span style="color:#6b7280">至</span>
-      <input class="settings-input time-input" id="inputBreakEnd" type="time">
-      <button class="btn-primary" id="btnAddBreak">+</button>
-    </div>
-  </div>
-
-  <div class="settings-section">
-    <div class="settings-label">下班提醒</div>
-    <div class="settings-row" style="align-items:center;gap:12px">
-      <label class="wday-label"><input type="checkbox" id="inputReminder"> 到点提醒下班</label>
-      <button class="btn-primary" id="btnTestReminder" style="margin-left:auto">测试提醒</button>
-    </div>
-  </div>
-
-  <div class="settings-section">
-    <div class="settings-label">工作日</div>
-    <div class="settings-row" id="workDaysCheckboxes">
-      <label class="wday-label"><input type="checkbox" value="1"> 周一</label>
-      <label class="wday-label"><input type="checkbox" value="2"> 周二</label>
-      <label class="wday-label"><input type="checkbox" value="3"> 周三</label>
-      <label class="wday-label"><input type="checkbox" value="4"> 周四</label>
-      <label class="wday-label"><input type="checkbox" value="5"> 周五</label>
-      <label class="wday-label"><input type="checkbox" value="6"> 周六</label>
-      <label class="wday-label"><input type="checkbox" value="7"> 周日</label>
-    </div>
-  </div>
-
-  <div class="settings-section">
-    <div class="settings-label">等价物（单选切换，右侧为单价/元）</div>
-    <div class="equiv-list" id="equivList"></div>
-    <div class="add-equiv-row">
-      <input class="settings-input" id="inputEqName" placeholder="名称" style="flex:1">
-      <input class="settings-input" id="inputEqIcon" placeholder="图标" style="width:56px;flex:none">
-      <input class="settings-input" id="inputEqPrice" placeholder="单价" type="number" min="0" step="1" style="width:72px;flex:none">
-      <button class="btn-primary" id="btnAddEquiv">+</button>
-    </div>
-  </div>
-
-  <div class="settings-section">
-    <button class="btn-primary" id="btnSave" style="width:100%" onclick="window.__saveSettings()">保存设置</button>
+  <div class="actions">
+    <button class="btn-hide" id="btnClose" title="关闭" onclick="window.close()">✕</button>
   </div>
 </div>
 
