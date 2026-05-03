@@ -147,7 +147,7 @@ function spawnParticle() {
   return {
     x: Math.random() * 320,
     y: 220 + Math.random() * 20,
-    size: Math.random() * 1.8 + 0.4,
+    size: Math.floor(Math.random() * 2) + 2,
     speed: Math.random() * 0.6 + 0.2,
     opacity: Math.random() * 0.5 + 0.2,
     drift: (Math.random() - 0.5) * 0.3
@@ -175,16 +175,13 @@ function updateParticles(workState, dt) {
 
 function drawParticles(workState) {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  const baseColor = workState.status === 'working' ? '34, 211, 238' : '107, 114, 128';
+  const baseColor = workState.status === 'working' ? '230, 184, 0' : '138, 138, 154';
   for (const p of particles) {
-    ctx.beginPath();
-    const gradient = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.size * 2);
-    gradient.addColorStop(0, `rgba(${baseColor}, ${p.opacity})`);
-    gradient.addColorStop(1, `rgba(${baseColor}, 0)`);
-    ctx.fillStyle = gradient;
-    ctx.arc(p.x, p.y, p.size * 2, 0, Math.PI * 2);
-    ctx.fill();
+    ctx.globalAlpha = p.opacity;
+    ctx.fillStyle = `rgb(${baseColor})`;
+    ctx.fillRect(Math.floor(p.x), Math.floor(p.y), p.size, p.size);
   }
+  ctx.globalAlpha = 1;
 }
 
 // --- Amount Display ---
@@ -216,9 +213,9 @@ function updateDisplay() {
   const oldStr = elAmount.textContent;
   const newStr = eqValue.toFixed(6);
   if (oldStr !== newStr && oldStr !== '0.000000') {
-    elAmount.style.textShadow = `0 0 30px rgba(251, 191, 36, 0.9), 0 0 60px rgba(251, 191, 36, 0.5), 0 2px 4px rgba(0,0,0,0.5)`;
+    elAmount.style.textShadow = `2px 2px 0 #000, 0 0 8px rgba(230, 184, 0, 0.8)`;
     setTimeout(() => {
-      elAmount.style.textShadow = `0 0 20px rgba(251, 191, 36, 0.6), 0 0 40px rgba(251, 191, 36, 0.3), 0 2px 4px rgba(0,0,0,0.5)`;
+      elAmount.style.textShadow = `2px 2px 0 #000`;
     }, 100);
   }
 
