@@ -257,7 +257,6 @@ MoreMoney/
 ├── assets/
 │   ├── icon.png         # 托盘图标 (256×256)
 │   ├── zpix.ttf         # Zpix 中文像素字体
-│   ├── zpix-mono.ttf    # Zpix Mono 等宽像素字体
 │   └── PressStart2P.ttf # Press Start 2P 英文像素等宽字体
 └── src/
     ├── index.html       # 主面板 DOM
