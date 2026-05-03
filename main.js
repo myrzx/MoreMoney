@@ -101,7 +101,7 @@ function createSettingsWindow() {
 
 function createTray() {
   tray = new Tray(getTrayIcon());
-  tray.setToolTip('MoreMoney - 正在计算薪资...');
+  tray.setToolTip('MoreMoney - 正在获取大米');
 
   const contextMenu = Menu.buildFromTemplate([
     {
