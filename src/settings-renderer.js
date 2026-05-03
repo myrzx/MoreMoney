@@ -14,6 +14,10 @@ const elBtnClose = document.getElementById('btnClose');
 const elInputReminder = document.getElementById('inputReminder');
 const elBtnTestReminder = document.getElementById('btnTestReminder');
 const elBtnEye = document.getElementById('btnEye');
+const elBreakList = document.getElementById('breakList');
+const elInputBreakStart = document.getElementById('inputBreakStart');
+const elInputBreakEnd = document.getElementById('inputBreakEnd');
+const elBtnAddBreak = document.getElementById('btnAddBreak');
 
 async function loadConfig() {
   try {
@@ -34,6 +38,7 @@ async function loadConfig() {
     elInputReminder.checked = config.reminderEnabled !== false;
 
     renderEquivalents();
+    renderBreaks();
   } catch (e) {
     // config load failed — use nothing
   }
@@ -105,6 +110,42 @@ elBtnAddEquiv.addEventListener('click', () => {
   elInputEqIcon.value = '';
   elInputEqPrice.value = '';
   renderEquivalents();
+});
+
+function renderBreaks() {
+  elBreakList.innerHTML = '';
+  const breaks = config.breaks || [];
+  breaks.forEach((brk, i) => {
+    const div = document.createElement('div');
+    div.className = 'break-item';
+
+    const timeSpan = document.createElement('span');
+    timeSpan.className = 'break-time';
+    timeSpan.textContent = `${brk.start} - ${brk.end}`;
+
+    const delBtn = document.createElement('button');
+    delBtn.className = 'btn-danger';
+    delBtn.textContent = '删';
+    delBtn.addEventListener('click', () => {
+      breaks.splice(i, 1);
+      renderBreaks();
+    });
+
+    div.appendChild(timeSpan);
+    div.appendChild(delBtn);
+    elBreakList.appendChild(div);
+  });
+}
+
+elBtnAddBreak.addEventListener('click', () => {
+  const start = elInputBreakStart.value;
+  const end = elInputBreakEnd.value;
+  if (!start || !end || start >= end) return;
+  if (!config.breaks) config.breaks = [];
+  config.breaks.push({ start, end });
+  elInputBreakStart.value = '';
+  elInputBreakEnd.value = '';
+  renderBreaks();
 });
 
 elBtnSave.addEventListener('click', () => { doSave(); });

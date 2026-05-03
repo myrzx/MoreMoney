@@ -3,6 +3,9 @@
   "workStart": "09:00",
   "workEnd": "17:30",
   "workDays": [1, 2, 3, 4, 5],
+  "breaks": [
+    { "start": "12:00", "end": "13:30" }
+  ],
   "reminderEnabled": true,
   "equivalents": [
     { "name": "奶茶", "icon": "🧋", "price": 20 },

@@ -135,6 +135,11 @@ function createTray() {
 
 // --- Clock-out Reminder ---
 
+function parseTime(timeStr) {
+  const [h, m] = timeStr.split(':').map(Number);
+  return h * 3600 + m * 60;
+}
+
 function isWorkday(date, workDays) {
   const jsDay = date.getDay();
   const mapped = jsDay === 0 ? 7 : jsDay;
@@ -146,9 +151,11 @@ function showNotification() {
   if (!config) return;
 
   const eq = config.equivalents[config.selectedEquivalent || 0];
-  const [startH, startM] = config.workStart.split(':').map(Number);
-  const [endH, endM] = config.workEnd.split(':').map(Number);
-  const workSeconds = (endH * 3600 + endM * 60) - (startH * 3600 + startM * 60);
+  const workStart = parseTime(config.workStart);
+  const workEnd = parseTime(config.workEnd);
+  const breaks = config.breaks || [];
+  const breakTotal = breaks.reduce((sum, b) => sum + parseTime(b.end) - parseTime(b.start), 0);
+  const workSeconds = workEnd - workStart - breakTotal;
   const perSecond = config.monthlySalary / 21.75 / 8 / 3600;
   const earned = perSecond * workSeconds;
   const count = (earned / eq.price).toFixed(2);

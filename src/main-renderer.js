@@ -20,26 +20,66 @@ function isWorkday(date, workDays) {
   return workDays.includes(mapped);
 }
 
+function getBreakTotal(config) {
+  const breaks = config.breaks || [];
+  return breaks.reduce((sum, b) => sum + parseTime(b.end) - parseTime(b.start), 0);
+}
+
+function getElapsedBreakSeconds(config, currentSeconds) {
+  const breaks = config.breaks || [];
+  let total = 0;
+  for (const b of breaks) {
+    const bStart = parseTime(b.start);
+    const bEnd = parseTime(b.end);
+    if (currentSeconds >= bEnd) {
+      total += bEnd - bStart;
+    } else if (currentSeconds > bStart) {
+      total += currentSeconds - bStart;
+    }
+  }
+  return total;
+}
+
+function getCurrentBreak(config, currentSeconds) {
+  const breaks = config.breaks || [];
+  for (const b of breaks) {
+    const bStart = parseTime(b.start);
+    const bEnd = parseTime(b.end);
+    if (currentSeconds >= bStart && currentSeconds < bEnd) {
+      return b;
+    }
+  }
+  return null;
+}
+
 function getTodayWorkSeconds(config) {
   const now = new Date();
-  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
   const workStart = parseTime(config.workStart);
   const workEnd = parseTime(config.workEnd);
   const currentSeconds = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
+  const breakTotal = getBreakTotal(config);
+  const totalWork = workEnd - workStart - breakTotal;
 
   if (!isWorkday(now, config.workDays)) {
-    return { status: 'holiday', elapsed: 0, total: workEnd - workStart };
+    return { status: 'holiday', elapsed: 0, total: totalWork };
   }
 
   if (currentSeconds < workStart) {
-    return { status: 'before', elapsed: 0, total: workEnd - workStart };
+    return { status: 'before', elapsed: 0, total: totalWork };
   }
 
   if (currentSeconds >= workEnd) {
-    return { status: 'after', elapsed: workEnd - workStart, total: workEnd - workStart };
+    return { status: 'after', elapsed: totalWork, total: totalWork };
   }
 
-  return { status: 'working', elapsed: currentSeconds - workStart, total: workEnd - workStart };
+  const brk = getCurrentBreak(config, currentSeconds);
+  if (brk) {
+    const elapsed = currentSeconds - workStart - getElapsedBreakSeconds(config, currentSeconds);
+    return { status: 'break', elapsed, total: totalWork, breakName: brk.name || '休息' };
+  }
+
+  const elapsed = currentSeconds - workStart - getElapsedBreakSeconds(config, currentSeconds);
+  return { status: 'working', elapsed, total: totalWork };
 }
 
 function calcPerSecondRate(config) {
@@ -196,6 +236,10 @@ function updateDisplay() {
     case 'holiday':
       elStatusText.textContent = '🌴 休息日';
       elStatusTime.textContent = '今天不赚钱';
+      break;
+    case 'break':
+      elStatusText.textContent = '🍵 ' + (workState.breakName || '休息中');
+      elStatusTime.textContent = secondsToHMS(workState.elapsed);
       break;
   }
 

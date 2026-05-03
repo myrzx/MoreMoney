@@ -93,6 +93,12 @@
   .equiv-item .name { flex: 1; }
   .equiv-item .price { color: #fbbf24; font-variant-numeric: tabular-nums; margin-right: 4px; }
   .add-equiv-row { display: flex; gap: 6px; margin-top: 8px; }
+  .break-item {
+    display: flex; align-items: center; gap: 8px;
+    padding: 6px 4px; font-size: 13px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+  .break-item .break-time { flex: 1; color: #a78bfa; }
   .close-btn {
     position: absolute; top: 6px; right: 14px;
     background: none; border: none; color: #6b7280; font-size: 20px; cursor: pointer;
@@ -130,6 +136,17 @@
       <input class="settings-input time-input" id="inputWorkStart" type="time">
       <span style="color:#6b7280">至</span>
       <input class="settings-input time-input" id="inputWorkEnd" type="time">
+    </div>
+  </div>
+
+  <div class="settings-section">
+    <div class="settings-label">休息时间（不计工时）</div>
+    <div class="break-list" id="breakList"></div>
+    <div class="settings-row" style="margin-top:8px">
+      <input class="settings-input time-input" id="inputBreakStart" type="time">
+      <span style="color:#6b7280">至</span>
+      <input class="settings-input time-input" id="inputBreakEnd" type="time">
+      <button class="btn-primary" id="btnAddBreak">+</button>
     </div>
   </div>
 

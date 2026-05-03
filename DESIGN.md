@@ -2,14 +2,14 @@
 
 ## 概览
 
-MoreMoney 是一个 Windows 桌面薪资可视化工具，基于 Electron + 原生 HTML/CSS/JS（无前端框架），~1000 行代码。核心思路：将上班期间的实时薪资换算为等价物（奶茶、显卡等），以挖矿风格动画在屏幕右下角展示，保护薪资隐私。
+MoreMoney 是一个 Windows 桌面薪资可视化工具，基于 Electron + 原生 HTML/CSS/JS（无前端框架），~1200 行代码。核心思路：将上班期间的实时薪资换算为等价物（奶茶、显卡等），以挖矿风格动画在屏幕右下角展示，保护薪资隐私。
 
 ## 架构
 
 ```
 ┌─────────────────────────────────────────────────┐
 │                   Main Process                   │
-│  main.js  (147 lines)                            │
+│  main.js  (200 lines)                            │
 │                                                   │
 │  ┌──────────┐  ┌───────────┐  ┌───────────────┐ │
 │  │   Tray   │  │ Main Win  │  │ Settings Win  │ │
@@ -20,13 +20,20 @@ MoreMoney 是一个 Windows 桌面薪资可视化工具，基于 Electron + 原�
 │              ┌─────────┴──────────────┴─────┐    │
 │              │       IPC Handlers            │    │
 │              │  load/save config              │    │
-│              │  open settings / hide window  │    │
+│              │  open settings / hide window   │    │
+│              │  test reminder                 │    │
 │              └───────────────────────────────┘    │
 │                                                   │
 │              ┌───────────────────────────────┐    │
 │              │       Config Store             │    │
 │              │  userData/config.json          │    │
 │              │  fallback: __dirname/config    │    │
+│              └───────────────────────────────┘    │
+│                                                   │
+│              ┌───────────────────────────────┐    │
+│              │       Clock-out Reminder       │    │
+│              │  scheduleReminder()            │    │
+│              │  Notification API              │    │
 │              └───────────────────────────────┘    │
 └─────────────────────────────────────────────────┘
                          │
@@ -48,15 +55,19 @@ MoreMoney 是一个 Windows 桌面薪资可视化工具，基于 Electron + 原�
 │  │  calcPerSecondRate()  — 秒薪计算              ││
 │  │  getTodayWorkSeconds() — 有效工作时长          ││
 │  │  isWorkday()          — 工作日判断             ││
+│  │  getBreakTotal()      — 休息总时长            ││
+│  │  getElapsedBreakSeconds() — 已过休息时长       ││
+│  │  getCurrentBreak()    — 当前是否在休息         ││
 │  │  每 100ms tick 累加 + 每 60s 重校准            ││
 │  └──────────────────────────────────────────────┘│
 │                                                   │
 │  ┌──────────────────────────────────────────────┐│
 │  │             Animation Layer                  ││
-│  │  Particle System (Canvas 2D)                 ││
+│  │  Particle System (Canvas 2D, max 200)        ││
 │  │  Scanline overlay (CSS ::before)             ││
 │  │  Glow text-shadow pulse                      ││
 │  │  Progress bar shine effect                   ││
+│  │  Visibility-aware animation pause            ││
 │  └──────────────────────────────────────────────┘│
 └─────────────────────────────────────────────────┘
 ```
@@ -65,7 +76,7 @@ MoreMoney 是一个 Windows 桌面薪资可视化工具，基于 Electron + 原�
 
 | 进程 | 文件 | 职责 |
 |------|------|------|
-| Main | `main.js` | 窗口生命周期、系统托盘、IPC 路由、配置文件读写 |
+| Main | `main.js` | 窗口生命周期、系统托盘、IPC 路由、配置文件读写、下班提醒 |
 | Bridge | `preload.js` | 安全暴露 `electronAPI` 到渲染进程（contextBridge） |
 | Renderer | `src/*` | 薪资计算、UI 渲染、动画、设置表单 |
 
@@ -75,7 +86,7 @@ MoreMoney 是一个 Windows 桌面薪资可视化工具，基于 Electron + 原�
 config.json ──→ loadConfig() ──→ calcPerSecondRate()
                                       │
                                       ▼
-                               currentAmount (累加)
+                               currentAmount (累加，扣除休息时间)
                                       │
                                       ▼
                                ÷ equivalent.price
@@ -83,6 +94,12 @@ config.json ──→ loadConfig() ──→ calcPerSecondRate()
                                       ▼
                                displayAmount ──→ DOM 更新
                                               ──→ Canvas 粒子
+
+config.json ──→ scheduleReminder() ──→ setTimeout(workEnd)
+                                           │
+                                           ▼
+                                      showNotification()
+                                      (含实际收入数字)
 ```
 
 ## 核心模块
@@ -90,8 +107,9 @@ config.json ──→ loadConfig() ──→ calcPerSecondRate()
 ### 1. 薪资引擎 (`src/main-renderer.js`)
 
 ```
-月薪 ÷ 21.75(月均工作日) ÷ 8(小时) ÷ 3600(秒) = 秒薪
-今日已赚 = 秒薪 × max(0, min(现在, 下班) - max(今天9:00, 上班))
+秒薪 = 月薪 ÷ 21.75(月均工作日) ÷ 8(小时) ÷ 3600(秒)
+有效工时 = 下班 - 上班 - 休息总时长
+今日已赚 = 秒薪 × 已工作秒数（扣除已过的休息时间）
 ```
 
 关键设计决策：
@@ -99,15 +117,26 @@ config.json ──→ loadConfig() ──→ calcPerSecondRate()
 - **双定时器**：100ms tick 保证动画流畅，60s 重校准防止浮点误差累积
 - **工作日判断**：`workDays` 数组 [1,2,3,4,5] 对应周一到周五，周日=7
 - **Lerp 平滑**：`displayAmount` 以 0.08 系数向 `currentAmount` 渐进，数字不跳变
+- **休息时间扣除**：`getElapsedBreakSeconds()` 计算已过的休息时间，从 elapsed 中减去
+- **休息状态**：当前时间在休息时段内时，status 为 `break`，UI 显示紫色状态点和 🍵 图标
 
 ### 2. 粒子系统 (`src/main-renderer.js`)
 
 Canvas 2D 绘制，每个粒子上升 + 水平漂移 + 渐隐：
 - 工作中：青色粒子 (34,211,238)，产卵率 0.5/帧
-- 非工作中：灰色粒子 (107,114,128)，产卵率 0.05/帧
+- 非工作中（含休息）：灰色粒子 (107,114,128)，产卵率 0.05/帧
 - 每个粒子有径向渐变发光，增强挖矿感
+- **上限 200 个**，超过不再产卵
+- **睡眠唤醒防积压**：`dt > 1s` 时跳过产卵，防止电脑休眠后粒子爆发导致卡死
 
-### 3. 窗口管理 (`main.js`)
+### 3. 下班提醒 (`main.js`)
+
+- 到达 `workEnd` 时间自动弹出 Windows 系统原生通知
+- 通知内容包含实际已赚金额和当前等价物（如"今天已赚 3.25 🧋 奶茶"）
+- 设置面板可开关、可测试
+- 配置变更时自动重新调度下一个提醒
+
+### 4. 窗口管理 (`main.js`)
 
 两个 BrowserWindow：
 - **主面板**：320×220，右下角，`alwaysOnTop`，无边框透明，圆角 16px
@@ -115,7 +144,7 @@ Canvas 2D 绘制，每个粒子上升 + 水平漂移 + 渐隐：
 
 两个窗口都采用 `transparent: true`，圆角由 CSS `border-radius` 实现。关键陷阱：`-webkit-app-region: no-drag` 不可设在 `body` 上，否则 Electron 33 会穿透所有鼠标事件。只在 `.drag-bar` 设 `drag`，其余区域默认即可点击。
 
-### 4. 配置系统 (`main.js` + `config.json`)
+### 5. 配置系统 (`main.js` + `config.json`)
 
 双层读取：
 1. 优先读 `%APPDATA%/more-money/config.json`（用户改过的配置）
@@ -123,6 +152,30 @@ Canvas 2D 绘制，每个粒子上升 + 水平漂移 + 渐隐：
 3. 每次设置面板保存时同步写入 userData + 主面板 focus 时重载
 
 `config.json` 随 asar 打包分发，保证首次启动有默认值。
+
+配置字段：
+```json
+{
+  "monthlySalary": 25000,
+  "workStart": "09:00",
+  "workEnd": "17:30",
+  "workDays": [1, 2, 3, 4, 5],
+  "breaks": [{ "start": "12:00", "end": "13:30" }],
+  "reminderEnabled": true,
+  "equivalents": [...],
+  "selectedEquivalent": 0
+}
+```
+
+## 性能优化
+
+| 优化点 | 说明 |
+|--------|------|
+| 粒子上限 | `MAX_PARTICLES = 200`，超过不再产卵 |
+| 睡眠防积压 | `dt > 1s` 时跳过产卵，防止休眠后粒子爆发 |
+| 状态缓存 | `getTodayWorkSeconds()` 每帧只算一次，结果传给粒子函数 |
+| 动画暂停 | 窗口隐藏时 `.paused` 类暂停所有 CSS `infinite` 动画 |
+| 配置重载 | focus 时直接 `reloadConfig()`，不再 `JSON.stringify` 比较 |
 
 ## 扩展方向
 
@@ -132,7 +185,7 @@ Canvas 2D 绘制，每个粒子上升 + 水平漂移 + 渐隐：
 - **自定义主题**：暗色/亮色/用户自选色，CSS 变量化当前硬编码的颜色值
 - **开机自启**：写入 `HKCU\Software\Microsoft\Windows\CurrentVersion\Run`，设置面板加开关
 - **多个等价物同时显示**：主面板展示多行，如"3.2 杯奶茶 + 0.06 个手办"
-- **通知提醒**：上班/下班时 Windows 通知，午休倒计时
+- **通知提醒**：上班/下班时 Windows 通知，午休倒计时 ← 已实现下班提醒
 
 ### 中期（中等复杂度）
 
@@ -164,7 +217,7 @@ Canvas 2D 绘制，每个粒子上升 + 水平漂移 + 渐隐：
 
 ```
 MoreMoney/
-├── main.js              # Electron 主进程
+├── main.js              # Electron 主进程（窗口、托盘、IPC、提醒）
 ├── preload.js           # IPC 安全桥接
 ├── package.json         # 依赖 + electron-builder 配置
 ├── config.json          # 默认配置（打包进 asar）
