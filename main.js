@@ -155,7 +155,7 @@ function showNotification() {
 
   new Notification({
     title: '下班啦！',
-    body: `今天已赚 ${count} ${eq.icon} ${eq.name}，该收工了 🏁`
+    body: `今天已赚 ${count} ${eq.icon} ${eq.name}，该收工了 🎉`
   }).show();
 }
 

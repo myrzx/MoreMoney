@@ -13,6 +13,7 @@ const elBtnSave = document.getElementById('btnSave');
 const elBtnClose = document.getElementById('btnClose');
 const elInputReminder = document.getElementById('inputReminder');
 const elBtnTestReminder = document.getElementById('btnTestReminder');
+const elBtnEye = document.getElementById('btnEye');
 
 async function loadConfig() {
   try {
@@ -109,6 +110,11 @@ elBtnAddEquiv.addEventListener('click', () => {
 elBtnSave.addEventListener('click', () => { doSave(); });
 elBtnClose.addEventListener('click', () => { window.close(); });
 elBtnTestReminder.addEventListener('click', () => { window.electronAPI.testReminder(); });
+elBtnEye.addEventListener('click', () => {
+  const visible = elInputSalary.type === 'text';
+  elInputSalary.type = visible ? 'password' : 'text';
+  elBtnEye.textContent = visible ? '👁' : '🙈';
+});
 
 async function doSave() {
   try {
