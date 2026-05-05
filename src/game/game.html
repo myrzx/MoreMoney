@@ -79,8 +79,8 @@
   <div id="catch-the-cat"></div>
   <div id="gameControls">
     <a class="credit-link" href="#" onclick="window.electronAPI.openExternal('https://github.com/ganlvtech/phaser-catch-the-cat')">phaser-catch-the-cat</a>
-    <button class="btn-game" id="btnUndo" title="回退">回退</button>
-    <button class="btn-game" id="btnReset" title="重置">重置</button>
+    <button class="btn-game" id="btnUndo" title="回退" onclick="doUndo()">回退</button>
+    <button class="btn-game" id="btnReset" title="重置" onclick="doReset()">重置</button>
     <button class="btn-hide" id="btnClose" title="关闭" onclick="window.close()">✕</button>
   </div>
 </div>
@@ -101,12 +101,17 @@
     statusBarAlign: 'center'
   });
 
-  document.getElementById('btnReset').addEventListener('click', function() {
-    window.game.mainScene.reset();
-  });
-  document.getElementById('btnUndo').addEventListener('click', function() {
-    window.game.mainScene.undo();
-  });
+  function getScene() {
+    return window.game.mainScene || window.game.scene.getScene('MainScene') || window.game.scene.scenes[0];
+  }
+  function doReset() {
+    var s = getScene();
+    if (s && s.reset) s.reset();
+  }
+  function doUndo() {
+    var s = getScene();
+    if (s && s.undo) s.undo();
+  }
 </script>
 </body>
 </html>
