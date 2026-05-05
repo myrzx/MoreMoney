@@ -101,9 +101,12 @@
     statusBarAlign: 'center'
   });
 
-  var scene = window.game.scene.scenes[0];
-  document.getElementById('btnReset').addEventListener('click', function() { scene.reset(); });
-  document.getElementById('btnUndo').addEventListener('click', function() { scene.undo(); });
+  document.getElementById('btnReset').addEventListener('click', function() {
+    window.game.mainScene.reset();
+  });
+  document.getElementById('btnUndo').addEventListener('click', function() {
+    window.game.mainScene.undo();
+  });
 </script>
 </body>
 </html>
