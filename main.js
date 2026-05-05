@@ -1,4 +1,4 @@
-const { app, BrowserWindow, Tray, Menu, ipcMain, nativeImage, screen, Notification } = require('electron');
+const { app, BrowserWindow, Tray, Menu, ipcMain, nativeImage, screen, Notification, shell } = require('electron');
 const path = require('path');
 const fs = require('fs');
 
@@ -278,7 +278,7 @@ function createGameWindow() {
     y: Math.round((sh - 560) / 2),
     frame: false,
     transparent: true,
-    resizable: true,
+    resizable: false,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
@@ -371,6 +371,7 @@ ipcMain.handle('save-config', (_e, config) => { saveConfig(config); scheduleRemi
 ipcMain.handle('open-settings', () => { createSettingsWindow(); });
 ipcMain.handle('open-calendar', () => { createCalendarWindow(); });
 ipcMain.handle('open-game', () => { createGameWindow(); });
+ipcMain.handle('open-external', (_e, url) => { shell.openExternal(url); });
 ipcMain.handle('hide-window', () => { mainWindow.hide(); });
 ipcMain.handle('test-reminder', () => { showNotification(); return true; });
 ipcMain.handle('load-records', () => loadRecords());

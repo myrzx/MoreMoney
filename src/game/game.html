@@ -38,10 +38,37 @@
   #catch-the-cat canvas {
     display: block;
   }
-  #gameApp .actions {
-    position: absolute;
-    bottom: 8px;
-    right: 12px;
+  #gameControls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    width: 100%;
+    justify-content: flex-end;
+    box-sizing: border-box;
+  }
+  #gameControls .btn-game {
+    background: #1a2540;
+    color: #c0c0c0;
+    border: 1px solid #3a3a5c;
+    font-family: 'Zpix', 'Microsoft YaHei', monospace;
+    font-size: 11px;
+    padding: 3px 10px;
+    cursor: pointer;
+    -webkit-font-smoothing: none;
+  }
+  #gameControls .btn-game:hover {
+    color: #e6b800;
+    border-color: #e6b800;
+  }
+  #gameControls .credit-link {
+    color: #5a5a8c;
+    font-size: 10px;
+    text-decoration: none;
+    margin-right: auto;
+  }
+  #gameControls .credit-link:hover {
+    color: #8a8abc;
   }
 </style>
 <title>捉猫</title>
@@ -50,14 +77,15 @@
 <div id="gameApp">
   <div class="drag-bar"></div>
   <div id="catch-the-cat"></div>
-  <div class="actions">
+  <div id="gameControls">
+    <a class="credit-link" href="#" onclick="window.electronAPI.openExternal('https://github.com/ganlvtech/phaser-catch-the-cat')">phaser-catch-the-cat</a>
+    <button class="btn-game" id="btnUndo" title="回退">回退</button>
+    <button class="btn-game" id="btnReset" title="重置">重置</button>
     <button class="btn-hide" id="btnClose" title="关闭" onclick="window.close()">✕</button>
   </div>
 </div>
 
 <script>
-  // Disable HiDPI scaling — Electron handles display scaling,
-  // and Phaser's devicePixelRatio math breaks input coordinates on resize
   Object.defineProperty(window, 'devicePixelRatio', { get: () => 1 });
 </script>
 <script src="phaser.min.js"></script>
@@ -72,6 +100,10 @@
     parent: 'catch-the-cat',
     statusBarAlign: 'center'
   });
+
+  var scene = window.game.scene.scenes[0];
+  document.getElementById('btnReset').addEventListener('click', function() { scene.reset(); });
+  document.getElementById('btnUndo').addEventListener('click', function() { scene.undo(); });
 </script>
 </body>
 </html>
