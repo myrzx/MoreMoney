@@ -5,6 +5,7 @@ const fs = require('fs');
 let mainWindow = null;
 let settingsWindow = null;
 let calendarWindow = null;
+let gameWindow = null;
 let tray = null;
 let isQuitting = false;
 let reminderTimer = null;
@@ -261,6 +262,34 @@ function createCalendarWindow() {
   calendarWindow.on('closed', () => { calendarWindow = null; });
 }
 
+// --- Game Window ---
+
+function createGameWindow() {
+  if (gameWindow) {
+    gameWindow.focus();
+    return;
+  }
+
+  const { width: sw, height: sh } = screen.getPrimaryDisplay().workAreaSize;
+  gameWindow = new BrowserWindow({
+    width: 480,
+    height: 560,
+    x: Math.round((sw - 480) / 2),
+    y: Math.round((sh - 560) / 2),
+    frame: false,
+    transparent: true,
+    resizable: true,
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
+      contextIsolation: true,
+      nodeIntegration: false
+    }
+  });
+
+  gameWindow.loadFile(path.join(__dirname, 'src', 'game', 'game.html'));
+  gameWindow.on('closed', () => { gameWindow = null; });
+}
+
 // --- Clock-out Reminder ---
 
 function parseTime(timeStr) {
@@ -341,6 +370,7 @@ ipcMain.handle('load-holidays', () => loadHolidays());
 ipcMain.handle('save-config', (_e, config) => { saveConfig(config); scheduleReminder(); return true; });
 ipcMain.handle('open-settings', () => { createSettingsWindow(); });
 ipcMain.handle('open-calendar', () => { createCalendarWindow(); });
+ipcMain.handle('open-game', () => { createGameWindow(); });
 ipcMain.handle('hide-window', () => { mainWindow.hide(); });
 ipcMain.handle('test-reminder', () => { showNotification(); return true; });
 ipcMain.handle('load-records', () => loadRecords());

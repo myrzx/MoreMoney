@@ -6,6 +6,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   saveConfig: (config) => ipcRenderer.invoke('save-config', config),
   openSettings: () => ipcRenderer.invoke('open-settings'),
   openCalendar: () => ipcRenderer.invoke('open-calendar'),
+  openGame: () => ipcRenderer.invoke('open-game'),
   hideWindow: () => ipcRenderer.invoke('hide-window'),
   testReminder: () => ipcRenderer.invoke('test-reminder'),
   loadRecords: () => ipcRenderer.invoke('load-records'),

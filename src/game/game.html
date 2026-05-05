@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="../style.css">
+<style>
+  body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background: transparent;
+    font-family: 'Zpix', 'Microsoft YaHei', monospace;
+    -webkit-font-smoothing: none;
+  }
+  #gameApp {
+    width: 464px;
+    height: 544px;
+    background: #0f1a2e;
+    border: 2px solid #3a3a5c;
+    box-shadow: inset 0 0 0 1px #5a5a8c;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  #gameApp .drag-bar {
+    height: 28px;
+    -webkit-app-region: drag;
+    width: 100%;
+    flex-shrink: 0;
+  }
+  #catch-the-cat {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding-bottom: 28px;
+  }
+  #catch-the-cat canvas {
+    display: block;
+  }
+  #gameApp .actions {
+    position: absolute;
+    bottom: 8px;
+    right: 12px;
+  }
+</style>
+<title>捉猫</title>
+</head>
+<body>
+<div id="gameApp">
+  <div class="drag-bar"></div>
+  <div id="catch-the-cat"></div>
+  <div class="actions">
+    <button class="btn-hide" id="btnClose" title="关闭" onclick="window.close()">✕</button>
+  </div>
+</div>
+
+<script src="phaser.min.js"></script>
+<script src="catch-the-cat.js"></script>
+<script>
+  window.game = new CatchTheCatGame({
+    w: 11,
+    h: 11,
+    r: 20,
+    initialWallCount: 8,
+    backgroundColor: 0x0f1a2e,
+    parent: 'catch-the-cat',
+    statusBarAlign: 'center'
+  });
+</script>
+</body>
+</html>
