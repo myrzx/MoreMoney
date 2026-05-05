@@ -1,6 +1,6 @@
 {
   "name": "more-money",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "MoreMoney - 今天能喝多少杯奶茶？",
   "main": "main.js",
   "scripts": {

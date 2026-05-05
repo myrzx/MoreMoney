@@ -11,11 +11,11 @@ MoreMoney 是一个 Windows 桌面薪资可视化工具，基于 Electron + 原�
 │                   Main Process                   │
 │  main.js  (200 lines)                            │
 │                                                   │
-│  ┌──────────┐  ┌───────────┐  ┌───────────────┐  ┌───────────────┐ │
-│  │   Tray   │  │ Main Win  │  │ Settings Win  │  │ Calendar Win  │ │
-│  │  托盘管理  │  │ 320×220   │  │   520×560     │  │  520×640      │ │
-│  │  右键菜单  │  │ 右下角置顶 │  │   屏幕居中     │  │  屏幕居中      │ │
-│  └──────────┘  └───────────┘  └───────────────┘  └───────────────┘ │
+│  ┌──────────┐  ┌───────────┐  ┌───────────────┐  ┌───────────────┐  ┌───────────────┐ │
+│  │   Tray   │  │ Main Win  │  │ Settings Win  │  │ Calendar Win  │  │   Game Win    │ │
+│  │  托盘管理  │  │ 320×220   │  │   520×560     │  │  520×640      │  │   480×560     │ │
+│  │  右键菜单  │  │ 右下角置顶 │  │   屏幕居中     │  │  屏幕居中      │  │  屏幕居中      │ │
+│  └──────────┘  └───────────┘  └───────────────┘  └───────────────┘  └───────────────┘ │
 │                        │              │           │
 │              ┌─────────┴──────────────┴─────┐    │
 │              │       IPC Handlers            │    │
@@ -23,6 +23,8 @@ MoreMoney 是一个 Windows 桌面薪资可视化工具，基于 Electron + 原�
 │              │  open settings / hide window   │    │
 │              │  test reminder                 │    │
 │              │  open calendar                 │    │
+│              │  open game                     │    │
+│              │  open external links           │    │
 │              │  load/save records             │    │
 │              │  load/save day overrides       │    │
 │              └───────────────────────────────┘    │
@@ -147,12 +149,23 @@ Canvas 2D 绘制，每个粒子上升 + 水平漂移 + 渐隐：
 
 ### 4. 窗口管理 (`main.js`)
 
-三个 BrowserWindow：
+四个 BrowserWindow：
 - **主面板**：320×220，右下角，`alwaysOnTop`，无边框透明
 - **设置面板**：500×560，屏幕居中，无边框透明
-- **统计面板**：500×580，屏幕居中，无边框透明
+- **日历面板**：520×640，屏幕居中，无边框透明
+- **游戏窗口**：480×560，屏幕居中，无边框透明，`resizable: false`（固定尺寸防止 Phaser 坐标偏移）
 
-两个窗口都采用 `transparent: true`，圆角由 CSS `border-radius` 实现。关键陷阱：`-webkit-app-region: no-drag` 不可设在 `body` 上，否则 Electron 33 会穿透所有鼠标事件。只在 `.drag-bar` 设 `drag`，其余区域默认即可点击。
+所有窗口都采用 `transparent: true`，圆角由 CSS `border-radius` 实现。关键陷阱：`-webkit-app-region: no-drag` 不可设在 `body` 上，否则 Electron 33 会穿透所有鼠标事件。只在 `.drag-bar` 设 `drag`，其余区域默认即可点击。
+
+### 8. 捉猫游戏 (`src/game/`)
+
+内置 CatchTheCat 六角网格益智游戏（MIT 协议），点击圆点放墙围住猫咪：
+
+- **技术栈**：Phaser.js 3 + Webpack bundle，三个自包含文件（`phaser.min.js`、`catch-the-cat.js`、`game.html`）
+- **暗色主题适配**：墙壁颜色改为浅钢蓝 `0x6699CC`，猫咪 SVG 改为 `#c0c0c0`，文字改为 `#d0d0d0`
+- **窗口锁定**：`resizable: false` 防止窗口缩放导致 Phaser 输入坐标偏移
+- **HiDPI 修复**：覆盖 `window.devicePixelRatio = 1` 禁用 Phaser 的 HiDPI 缩放（Electron 自行处理）
+- **HTML 控件**：底部重置/回退按钮和链接使用 HTML 渲染（非 Phaser 渲染），避免位置错乱
 
 ### 5. 配置系统 (`main.js` + `config.json`)
 
@@ -266,5 +279,9 @@ MoreMoney/
     ├── settings.html    # 设置面板 DOM + 内联样式
     ├── settings-renderer.js # 设置面板逻辑
     ├── calendar.html       # 日历 DOM
-    └── calendar-renderer.js # 日历渲染 + 打卡逻辑
+    ├── calendar-renderer.js # 日历渲染 + 打卡逻辑
+    └── game/
+        ├── game.html         # 游戏包装页（暗色主题 + HTML 控件）
+        ├── phaser.min.js     # Phaser 3 引擎
+        └── catch-the-cat.js  # 游戏逻辑 + SVG 猫咪 + AI
 ```
